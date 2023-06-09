@@ -2,6 +2,7 @@
 [![Go](https://github.com/SarthakMakhija/snapshot-isolation/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/snapshot-isolation/actions/workflows/build.yml)
 
 The idea is to provide an implementation of **snapshot transaction isolation** and **serialized snapshot isolation** in a tiny MVCC based in-memory store.
+The implementation will be used alongside my [storage engine workshop](https://github.com/SarthakMakhija/storage-engine-workshop-template).
 
 The focus is only on the **I** part of the **ACID** transactions. The following ideas will be implemented:
 - [X] MVCC based Skiplist with:
