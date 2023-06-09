@@ -1,14 +1,12 @@
 package mvcc
 
 type Value struct {
-	value   []byte
-	deleted bool
+	value []byte
 }
 
 func newValue(value []byte) Value {
 	return Value{
-		value:   value,
-		deleted: false,
+		value: value,
 	}
 }
 
