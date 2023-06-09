@@ -4,8 +4,6 @@ import (
 	"bytes"
 )
 
-const VersionSize = 8
-
 type VersionedKey struct {
 	key     []byte
 	version uint64
@@ -48,24 +46,4 @@ func (versionedKey VersionedKey) matchesKeyPrefix(key []byte) bool {
 
 func (versionedKey VersionedKey) asString() string {
 	return string(versionedKey.key)
-}
-
-type Value struct {
-	value   []byte
-	deleted bool
-}
-
-func newValue(value []byte) Value {
-	return Value{
-		value:   value,
-		deleted: false,
-	}
-}
-
-func emptyValue() Value {
-	return Value{}
-}
-
-func (value Value) slice() []byte {
-	return value.value
 }
