@@ -20,6 +20,10 @@ func (memTable *MemTable) put(key VersionedKey, value Value) {
 	memTable.head.put(key, value, memTable.levelGenerator)
 }
 
+func (memTable *MemTable) update(key VersionedKey, value Value) {
+	memTable.put(key, value)
+}
+
 func (memTable *MemTable) get(key VersionedKey) (Value, bool) {
 	return memTable.head.get(key)
 }
