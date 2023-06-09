@@ -1,6 +1,8 @@
 package mvcc
 
-import "snapshot-isolation/utils"
+import (
+	"snapshot-isolation/mvcc/utils"
+)
 
 type MemTable struct {
 	head           *SkiplistNode

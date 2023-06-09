@@ -2,7 +2,7 @@ package mvcc
 
 import (
 	"github.com/stretchr/testify/assert"
-	"snapshot-isolation/utils"
+	"snapshot-isolation/mvcc/utils"
 	"testing"
 )
 

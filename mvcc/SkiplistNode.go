@@ -1,7 +1,7 @@
 package mvcc
 
 import (
-	"snapshot-isolation/utils"
+	"snapshot-isolation/mvcc/utils"
 )
 
 type SkiplistNode struct {
