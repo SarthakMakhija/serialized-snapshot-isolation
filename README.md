@@ -6,6 +6,7 @@ The idea is to provide an implementation of **snapshot transaction isolation** a
 The focus is only on the **I** part of the **ACID** transactions. The following ideas will be implemented:
 - [X] MVCC based Skiplist with:
   - [X] Put
+  - [X] Update
   - [X] Get
 - [ ] Transaction implementation with snapshot isolation
 - [ ] Transaction implementation with serialized snapshot isolation
