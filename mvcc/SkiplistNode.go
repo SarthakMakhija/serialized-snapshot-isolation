@@ -10,7 +10,7 @@ type SkiplistNode struct {
 	forwards []*SkiplistNode
 }
 
-func NewSkiplistNode(key VersionedKey, value Value, level int) *SkiplistNode {
+func newSkiplistNode(key VersionedKey, value Value, level int) *SkiplistNode {
 	return &SkiplistNode{
 		key:      key,
 		value:    value,
@@ -18,7 +18,7 @@ func NewSkiplistNode(key VersionedKey, value Value, level int) *SkiplistNode {
 	}
 }
 
-func (node *SkiplistNode) Put(key VersionedKey, value Value, levelGenerator utils.LevelGenerator) bool {
+func (node *SkiplistNode) put(key VersionedKey, value Value, levelGenerator utils.LevelGenerator) bool {
 	current := node
 	positions := make([]*SkiplistNode, len(node.forwards))
 
@@ -32,7 +32,7 @@ func (node *SkiplistNode) Put(key VersionedKey, value Value, levelGenerator util
 	current = current.forwards[0]
 	if current == nil || current.key.compare(key) != 0 {
 		newLevel := levelGenerator.Generate()
-		newNode := NewSkiplistNode(key, value, newLevel)
+		newNode := newSkiplistNode(key, value, newLevel)
 		for level := 0; level < newLevel; level++ {
 			newNode.forwards[level] = positions[level].forwards[level]
 			positions[level].forwards[level] = newNode
@@ -42,7 +42,7 @@ func (node *SkiplistNode) Put(key VersionedKey, value Value, levelGenerator util
 	return false
 }
 
-func (node *SkiplistNode) Get(key VersionedKey) (Value, bool) {
+func (node *SkiplistNode) get(key VersionedKey) (Value, bool) {
 	node, ok := node.matchingNode(key)
 	if ok {
 		return node.value, true
