@@ -4,7 +4,7 @@ type Value struct {
 	value []byte
 }
 
-func newValue(value []byte) Value {
+func NewValue(value []byte) Value {
 	return Value{
 		value: value,
 	}
@@ -14,6 +14,6 @@ func emptyValue() Value {
 	return Value{}
 }
 
-func (value Value) slice() []byte {
+func (value Value) Slice() []byte {
 	return value.value
 }

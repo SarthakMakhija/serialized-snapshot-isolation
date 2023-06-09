@@ -9,7 +9,7 @@ type VersionedKey struct {
 	version uint64
 }
 
-func newVersionedKey(key []byte, version uint64) VersionedKey {
+func NewVersionedKey(key []byte, version uint64) VersionedKey {
 	return VersionedKey{key: key, version: version}
 }
 
