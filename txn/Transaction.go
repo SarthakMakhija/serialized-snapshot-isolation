@@ -16,6 +16,8 @@ type ReadWriteTransaction struct {
 	memtable *mvcc.MemTable
 }
 
+// NewReadonlyTransaction
+// TODO: Decide if the signature needs a beginTimestamp or should the NewReadonlyTransaction method get the beginTimestamp from Oracle
 func NewReadonlyTransaction(beginTimestamp uint64, memtable *mvcc.MemTable) *ReadonlyTransaction {
 	return &ReadonlyTransaction{
 		beginTimestamp: beginTimestamp,
@@ -48,7 +50,7 @@ func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) {
 }
 
 // Commit
-// TODO: Decide if the signature needs a commitTimestamp or should the Commit method get the commitTimestamp
+// TODO: Decide if the signature needs a commitTimestamp or should the Commit method get the commitTimestamp from Oracle
 func (transaction *ReadWriteTransaction) Commit(commitTimestamp uint64) {
 	//TODO: Identify conflicts
 	if transaction.batch.IsEmpty() {
