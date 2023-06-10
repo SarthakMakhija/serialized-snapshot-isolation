@@ -34,6 +34,7 @@ func (executor TransactionExecutor) spin() {
 			executor.apply(timestampedBatch)
 			executor.markApplied(timestampedBatch)
 		case <-executor.stopChannel:
+			close(executor.batchChannel)
 			return
 		}
 	}
@@ -50,4 +51,5 @@ func (executor TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
 
 func (executor TransactionExecutor) markApplied(batch TimestampedBatch) {
 	batch.doneChannel <- struct{}{}
+	close(batch.doneChannel)
 }
