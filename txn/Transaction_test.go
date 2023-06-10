@@ -32,7 +32,9 @@ func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 	transaction := NewReadWriteTransaction(1, memTable)
 	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state disk"))
-	transaction.Commit(2)
+
+	done := transaction.Commit(2)
+	<-done
 
 	readonlyTransaction := NewReadonlyTransaction(2, memTable)
 
@@ -46,4 +48,24 @@ func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 
 	_, ok = readonlyTransaction.Get([]byte("non-existing"))
 	assert.Equal(t, false, ok)
+}
+
+func TestGetsTheValueFromAKeyInAReadWriteTransactionFromBatch(t *testing.T) {
+	memTable := mvcc.NewMemTable(10)
+
+	transaction := NewReadWriteTransaction(1, memTable)
+	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+
+	value, ok := transaction.Get([]byte("HDD"))
+	assert.Equal(t, true, ok)
+	assert.Equal(t, []byte("Hard disk"), value.Slice())
+
+	done := transaction.Commit(2)
+	<-done
+
+	readonlyTransaction := NewReadonlyTransaction(2, memTable)
+
+	value, ok = readonlyTransaction.Get([]byte("HDD"))
+	assert.Equal(t, true, ok)
+	assert.Equal(t, []byte("Hard disk"), value.Slice())
 }

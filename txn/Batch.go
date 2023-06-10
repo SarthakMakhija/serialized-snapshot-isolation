@@ -1,5 +1,7 @@
 package txn
 
+import "bytes"
+
 type KeyValuePair struct {
 	key   []byte
 	value []byte
@@ -37,6 +39,15 @@ func NewBatch() *Batch {
 func (batch *Batch) Add(key, value []byte) *Batch {
 	batch.pairs = append(batch.pairs, newKeyValuePair(key, value))
 	return batch
+}
+
+func (batch *Batch) Get(key []byte) ([]byte, bool) {
+	for _, pair := range batch.pairs {
+		if bytes.Compare(pair.key, key) == 0 {
+			return pair.value, true
+		}
+	}
+	return nil, false
 }
 
 func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64) TimestampedBatch {

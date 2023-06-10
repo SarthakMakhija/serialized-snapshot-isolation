@@ -41,6 +41,9 @@ func (transaction *ReadonlyTransaction) Get(key []byte) (mvcc.Value, bool) {
 
 func (transaction *ReadWriteTransaction) Get(key []byte) (mvcc.Value, bool) {
 	//TODO: track the key in the readSet
+	if value, ok := transaction.batch.Get(key); ok {
+		return mvcc.NewValue(value), true
+	}
 	versionedKey := mvcc.NewVersionedKey(key, transaction.beginTimestamp)
 	return transaction.memtable.Get(versionedKey)
 }
@@ -51,10 +54,10 @@ func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) {
 
 // Commit
 // TODO: Decide if the signature needs a commitTimestamp or should the Commit method get the commitTimestamp from Oracle
-func (transaction *ReadWriteTransaction) Commit(commitTimestamp uint64) {
+func (transaction *ReadWriteTransaction) Commit(commitTimestamp uint64) <-chan struct{} {
 	//TODO: Identify conflicts
 	if transaction.batch.IsEmpty() {
-		return
+		return nil
 	}
-	transaction.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp))
+	return transaction.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp))
 }
