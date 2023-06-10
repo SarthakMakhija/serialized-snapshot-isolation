@@ -5,7 +5,7 @@ The idea is to provide an implementation of **snapshot transaction isolation** a
 The implementation will be used alongside my [storage engine workshop](https://github.com/SarthakMakhija/storage-engine-workshop-template).
 
 The focus is only on the **I** part of the **ACID** transactions. The following ideas will be implemented:
-- [X] MVCC based Skiplist with:
+- [X] Multi-versioned Skiplist with:
   - [X] Put
   - [X] Update
   - [X] Get
