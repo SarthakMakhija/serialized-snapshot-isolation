@@ -47,6 +47,10 @@ func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64) TimestampedBatch 
 	}
 }
 
+func (batch *Batch) IsEmpty() bool {
+	return len(batch.pairs) == 0
+}
+
 func (timestampedBatch TimestampedBatch) AllPairs() []KeyValuePair {
 	return timestampedBatch.batch.pairs
 }
