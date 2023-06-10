@@ -11,7 +11,7 @@ func TestExecutesABatch(t *testing.T) {
 	executor := NewTransactionExecutor(memTable)
 
 	batch := NewBatch().Add([]byte("HDD"), []byte("Hard disk")).Add([]byte("isolation"), []byte("Snapshot"))
-	doneChannel := executor.Submit(batch, 1)
+	doneChannel := executor.Submit(batch.ToTimestampedBatch(1))
 	<-doneChannel
 
 	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 1))
@@ -28,11 +28,11 @@ func TestExecutes2Batches(t *testing.T) {
 	executor := NewTransactionExecutor(memTable)
 
 	batch := NewBatch().Add([]byte("HDD"), []byte("Hard disk")).Add([]byte("isolation"), []byte("Snapshot"))
-	doneChannel := executor.Submit(batch, 1)
+	doneChannel := executor.Submit(batch.ToTimestampedBatch(1))
 	<-doneChannel
 
 	anotherBatch := NewBatch().Add([]byte("HDD"), []byte("Hard disk drive")).Add([]byte("isolation"), []byte("Serialized Snapshot"))
-	doneChannel = executor.Submit(anotherBatch, 2)
+	doneChannel = executor.Submit(anotherBatch.ToTimestampedBatch(2))
 	<-doneChannel
 
 	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 1))
@@ -57,7 +57,7 @@ func TestExecutesABatchAndStops(t *testing.T) {
 	executor := NewTransactionExecutor(memTable)
 
 	batch := NewBatch().Add([]byte("HDD"), []byte("Hard disk")).Add([]byte("isolation"), []byte("Snapshot"))
-	doneChannel := executor.Submit(batch, 1)
+	doneChannel := executor.Submit(batch.ToTimestampedBatch(1))
 	<-doneChannel
 
 	executor.Stop()

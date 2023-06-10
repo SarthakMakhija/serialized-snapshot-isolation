@@ -2,12 +2,6 @@ package snapshot_isolation
 
 import "snapshot-isolation/mvcc"
 
-type TimestampedBatch struct {
-	batch       *Batch
-	timestamp   uint64
-	doneChannel chan struct{}
-}
-
 type TransactionExecutor struct {
 	batchChannel chan TimestampedBatch
 	stopChannel  chan struct{}
@@ -24,10 +18,9 @@ func NewTransactionExecutor(memtable *mvcc.MemTable) TransactionExecutor {
 	return transactionExecutor
 }
 
-func (executor TransactionExecutor) Submit(batch *Batch, commitTimestamp uint64) <-chan struct{} {
-	timestampedBatch := TimestampedBatch{batch: batch, timestamp: commitTimestamp, doneChannel: make(chan struct{})}
-	executor.batchChannel <- timestampedBatch
-	return timestampedBatch.doneChannel
+func (executor TransactionExecutor) Submit(batch TimestampedBatch) <-chan struct{} {
+	executor.batchChannel <- batch
+	return batch.doneChannel
 }
 
 func (executor TransactionExecutor) Stop() {
@@ -47,7 +40,7 @@ func (executor TransactionExecutor) spin() {
 }
 
 func (executor TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
-	for _, keyValuePair := range timestampedBatch.batch.AllPairs() {
+	for _, keyValuePair := range timestampedBatch.AllPairs() {
 		executor.memtable.PutOrUpdate(
 			mvcc.NewVersionedKey(keyValuePair.getKey(), timestampedBatch.timestamp),
 			mvcc.NewValue(keyValuePair.getValue()),

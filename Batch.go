@@ -24,6 +24,12 @@ type Batch struct {
 	pairs []KeyValuePair
 }
 
+type TimestampedBatch struct {
+	batch       *Batch
+	timestamp   uint64
+	doneChannel chan struct{}
+}
+
 func NewBatch() *Batch {
 	return &Batch{}
 }
@@ -33,6 +39,14 @@ func (batch *Batch) Add(key, value []byte) *Batch {
 	return batch
 }
 
-func (batch *Batch) AllPairs() []KeyValuePair {
-	return batch.pairs
+func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64) TimestampedBatch {
+	return TimestampedBatch{
+		batch:       batch,
+		timestamp:   commitTimestamp,
+		doneChannel: make(chan struct{}),
+	}
+}
+
+func (timestampedBatch TimestampedBatch) AllPairs() []KeyValuePair {
+	return timestampedBatch.batch.pairs
 }
