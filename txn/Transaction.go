@@ -41,12 +41,11 @@ func (transaction *ReadonlyTransaction) Get(key []byte) (mvcc.Value, bool) {
 }
 
 func (transaction *ReadWriteTransaction) Get(key []byte) (mvcc.Value, bool) {
-	//TODO: track the key in the readSet
 	if value, ok := transaction.batch.Get(key); ok {
 		return mvcc.NewValue(value), true
 	}
 	transaction.reads = append(transaction.reads, key)
-	
+
 	versionedKey := mvcc.NewVersionedKey(key, transaction.beginTimestamp)
 	return transaction.memtable.Get(versionedKey)
 }
