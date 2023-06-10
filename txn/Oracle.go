@@ -27,6 +27,15 @@ func NewOracle() *Oracle {
 	}
 }
 
+func (oracle *Oracle) beginTimestamp() uint64 {
+	oracle.lock.Lock()
+	defer oracle.lock.Unlock()
+
+	//TODO: may be wait to ensure that the commits are done upto this point
+	beginTimestamp := oracle.nextTimestamp - 1
+	return beginTimestamp
+}
+
 func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction) (uint64, error) {
 	oracle.lock.Lock()
 	defer oracle.lock.Unlock()

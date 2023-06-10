@@ -6,6 +6,23 @@ import (
 	"testing"
 )
 
+func TestGetsTheBeginTimestamp(t *testing.T) {
+	oracle := NewOracle()
+	assert.Equal(t, uint64(0), oracle.beginTimestamp())
+}
+
+func TestGetsTheBeginTimestampAfterACommit(t *testing.T) {
+	oracle := NewOracle()
+
+	transaction := NewReadWriteTransaction(1, mvcc.NewMemTable(10))
+	transaction.Get([]byte("HDD"))
+
+	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
+	assert.Equal(t, uint64(1), commitTimestamp)
+
+	assert.Equal(t, uint64(1), oracle.beginTimestamp())
+}
+
 func TestGetsCommitTimestampForTransactionGivenNoTransactionsAreCurrentlyTracked(t *testing.T) {
 	oracle := NewOracle()
 
