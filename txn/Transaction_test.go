@@ -1,4 +1,4 @@
-package snapshot_isolation
+package txn
 
 import (
 	"github.com/stretchr/testify/assert"
