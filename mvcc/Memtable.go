@@ -16,12 +16,8 @@ func NewMemTable(maxLevel int) *MemTable {
 	}
 }
 
-func (memTable *MemTable) Put(key VersionedKey, value Value) {
-	memTable.head.put(key, value, memTable.levelGenerator)
-}
-
-func (memTable *MemTable) Update(key VersionedKey, value Value) {
-	memTable.Put(key, value)
+func (memTable *MemTable) PutOrUpdate(key VersionedKey, value Value) {
+	memTable.head.putOrUpdate(key, value, memTable.levelGenerator)
 }
 
 func (memTable *MemTable) Get(key VersionedKey) (Value, bool) {

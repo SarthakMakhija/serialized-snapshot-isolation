@@ -48,7 +48,7 @@ func (executor TransactionExecutor) spin() {
 
 func (executor TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
 	for _, keyValuePair := range timestampedBatch.batch.AllPairs() {
-		executor.memtable.Put(
+		executor.memtable.PutOrUpdate(
 			mvcc.NewVersionedKey(keyValuePair.getKey(), timestampedBatch.timestamp),
 			mvcc.NewValue(keyValuePair.getValue()),
 		)

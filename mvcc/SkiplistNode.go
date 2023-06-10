@@ -18,7 +18,7 @@ func newSkiplistNode(key VersionedKey, value Value, level int) *SkiplistNode {
 	}
 }
 
-func (node *SkiplistNode) put(key VersionedKey, value Value, levelGenerator utils.LevelGenerator) bool {
+func (node *SkiplistNode) putOrUpdate(key VersionedKey, value Value, levelGenerator utils.LevelGenerator) bool {
 	current := node
 	positions := make([]*SkiplistNode, len(node.forwards))
 
