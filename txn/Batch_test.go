@@ -33,6 +33,22 @@ func TestGetTheValueOfANonExistingKeyFromBatch(t *testing.T) {
 	assert.Equal(t, false, ok)
 }
 
+func TestContainsTheKey(t *testing.T) {
+	batch := NewBatch()
+	batch.Add([]byte("HDD"), []byte("Hard disk"))
+
+	contains := batch.Contains([]byte("HDD"))
+	assert.Equal(t, true, contains)
+}
+
+func TestDoesNotContainTheKey(t *testing.T) {
+	batch := NewBatch()
+	batch.Add([]byte("HDD"), []byte("Hard disk"))
+
+	contains := batch.Contains([]byte("SSD"))
+	assert.Equal(t, false, contains)
+}
+
 func TestGetsTheTimestampedBatch(t *testing.T) {
 	batch := NewBatch()
 	batch.Add([]byte("HDD"), []byte("Hard disk"))

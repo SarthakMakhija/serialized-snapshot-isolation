@@ -50,6 +50,11 @@ func (batch *Batch) Get(key []byte) ([]byte, bool) {
 	return nil, false
 }
 
+func (batch *Batch) Contains(key []byte) bool {
+	_, ok := batch.Get(key)
+	return ok
+}
+
 func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64) TimestampedBatch {
 	return TimestampedBatch{
 		batch:       batch,
