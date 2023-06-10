@@ -8,8 +8,8 @@ type TransactionExecutor struct {
 	memtable     *mvcc.MemTable
 }
 
-func NewTransactionExecutor(memtable *mvcc.MemTable) TransactionExecutor {
-	transactionExecutor := TransactionExecutor{
+func NewTransactionExecutor(memtable *mvcc.MemTable) *TransactionExecutor {
+	transactionExecutor := &TransactionExecutor{
 		batchChannel: make(chan TimestampedBatch),
 		stopChannel:  make(chan struct{}),
 		memtable:     memtable,
@@ -18,16 +18,16 @@ func NewTransactionExecutor(memtable *mvcc.MemTable) TransactionExecutor {
 	return transactionExecutor
 }
 
-func (executor TransactionExecutor) Submit(batch TimestampedBatch) <-chan struct{} {
+func (executor *TransactionExecutor) Submit(batch TimestampedBatch) <-chan struct{} {
 	executor.batchChannel <- batch
 	return batch.doneChannel
 }
 
-func (executor TransactionExecutor) Stop() {
+func (executor *TransactionExecutor) Stop() {
 	executor.stopChannel <- struct{}{}
 }
 
-func (executor TransactionExecutor) spin() {
+func (executor *TransactionExecutor) spin() {
 	for {
 		select {
 		case timestampedBatch := <-executor.batchChannel:
@@ -40,7 +40,7 @@ func (executor TransactionExecutor) spin() {
 	}
 }
 
-func (executor TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
+func (executor *TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
 	for _, keyValuePair := range timestampedBatch.AllPairs() {
 		executor.memtable.PutOrUpdate(
 			mvcc.NewVersionedKey(keyValuePair.getKey(), timestampedBatch.timestamp),
@@ -49,7 +49,7 @@ func (executor TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
 	}
 }
 
-func (executor TransactionExecutor) markApplied(batch TimestampedBatch) {
+func (executor *TransactionExecutor) markApplied(batch TimestampedBatch) {
 	batch.doneChannel <- struct{}{}
 	close(batch.doneChannel)
 }
