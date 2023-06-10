@@ -62,10 +62,33 @@ func TestGetsTheValueFromAKeyInAReadWriteTransactionFromBatch(t *testing.T) {
 
 	done := transaction.Commit(2)
 	<-done
+}
 
-	readonlyTransaction := NewReadonlyTransaction(2, memTable)
+func TestTracksReadsInAReadWriteTransaction(t *testing.T) {
+	memTable := mvcc.NewMemTable(10)
 
-	value, ok = readonlyTransaction.Get([]byte("HDD"))
-	assert.Equal(t, true, ok)
-	assert.Equal(t, []byte("Hard disk"), value.Slice())
+	transaction := NewReadWriteTransaction(1, memTable)
+	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	transaction.Get([]byte("SSD"))
+
+	done := transaction.Commit(2)
+	<-done
+
+	assert.Equal(t, 1, len(transaction.reads))
+	key := transaction.reads[0]
+
+	assert.Equal(t, []byte("SSD"), key)
+}
+
+func TestDoesNotTrackReadsInAReadWriteTransactionIfKeysAreReadFromTheBatch(t *testing.T) {
+	memTable := mvcc.NewMemTable(10)
+
+	transaction := NewReadWriteTransaction(1, memTable)
+	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	transaction.Get([]byte("HDD"))
+
+	done := transaction.Commit(2)
+	<-done
+
+	assert.Equal(t, 0, len(transaction.reads))
 }
