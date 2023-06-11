@@ -3,6 +3,7 @@ package txn
 import (
 	"github.com/stretchr/testify/assert"
 	"snapshot-isolation/mvcc"
+	"snapshot-isolation/txn/errors"
 	"testing"
 )
 
@@ -91,5 +92,5 @@ func TestErrorsForOneTransaction(t *testing.T) {
 
 	_, err := oracle.mayBeCommitTimestampFor(thirdTransaction)
 	assert.Error(t, err)
-	assert.Equal(t, ConflictErr, err)
+	assert.Equal(t, errors.ConflictErr, err)
 }

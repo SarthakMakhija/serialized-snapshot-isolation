@@ -3,6 +3,7 @@ package txn
 import (
 	"github.com/stretchr/testify/assert"
 	"snapshot-isolation/mvcc"
+	"snapshot-isolation/txn/errors"
 	"testing"
 )
 
@@ -35,7 +36,7 @@ func TestCommitsAnEmptyReadWriteTransaction(t *testing.T) {
 	_, err := transaction.Commit()
 
 	assert.Error(t, err)
-	assert.Equal(t, EmptyTransactionErr, err)
+	assert.Equal(t, errors.EmptyTransactionErr, err)
 }
 
 func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {

@@ -1,12 +1,9 @@
 package txn
 
 import (
-	"errors"
+	txnErrors "snapshot-isolation/txn/errors"
 	"sync"
 )
-
-var ConflictErr = errors.New("transaction conflicts with other")
-var EmptyTransactionErr = errors.New("transaction is empty, invoke PutOrUpdate in a transaction before committing")
 
 type CommittedTransaction struct {
 	commitTimestamp uint64
@@ -43,7 +40,7 @@ func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction)
 	defer oracle.lock.Unlock()
 
 	if oracle.hasConflictFor(transaction) {
-		return 0, ConflictErr
+		return 0, txnErrors.ConflictErr
 	}
 
 	commitTimestamp := oracle.nextTimestamp

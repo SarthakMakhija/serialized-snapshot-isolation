@@ -1,6 +1,9 @@
 package txn
 
-import "snapshot-isolation/mvcc"
+import (
+	"snapshot-isolation/mvcc"
+	"snapshot-isolation/txn/errors"
+)
 
 type ReadonlyTransaction struct {
 	beginTimestamp uint64
@@ -56,7 +59,7 @@ func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) {
 
 func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 	if transaction.batch.IsEmpty() {
-		return nil, EmptyTransactionErr
+		return nil, errors.EmptyTransactionErr
 	}
 
 	//Send the transaction to the executor in the increasing order of commit timestamp
