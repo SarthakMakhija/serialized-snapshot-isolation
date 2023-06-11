@@ -56,6 +56,7 @@ func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) {
 
 // Commit
 // TODO: Decide if the signature needs a commitTimestamp or should the Commit method get the commitTimestamp from Oracle
+// TODO: Get the commit timestamp from Oracle and ensure that the transaction go to the executor in the increasing order of commit timestamp
 func (transaction *ReadWriteTransaction) Commit(commitTimestamp uint64) <-chan struct{} {
 	//TODO: Identify conflicts
 	if transaction.batch.IsEmpty() {
