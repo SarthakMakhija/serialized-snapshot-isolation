@@ -54,13 +54,14 @@ func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) {
 	transaction.batch.Add(key, value)
 }
 
-// Commit
-// TODO: Get the commit timestamp from Oracle and ensure that the transaction go to the executor in the increasing order of commit timestamp
 func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
-	//TODO: Identify conflicts
 	if transaction.batch.IsEmpty() {
 		return nil, EmptyTransactionErr
 	}
+
+	//Send the transaction to the executor in the increasing order of commit timestamp
+	transaction.oracle.executorLock.Lock()
+	defer transaction.oracle.executorLock.Unlock()
 
 	commitTimestamp, err := transaction.oracle.mayBeCommitTimestampFor(transaction)
 	if err != nil {

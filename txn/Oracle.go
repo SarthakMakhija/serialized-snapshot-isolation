@@ -15,6 +15,7 @@ type CommittedTransaction struct {
 
 type Oracle struct {
 	lock                  sync.Mutex
+	executorLock          sync.Mutex
 	nextTimestamp         uint64
 	committedTransactions []CommittedTransaction
 }
