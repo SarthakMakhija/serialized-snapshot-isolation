@@ -6,6 +6,7 @@ import (
 )
 
 var ConflictErr = errors.New("transaction conflicts with other")
+var EmptyTransactionErr = errors.New("transaction is empty, invoke PutOrUpdate in a transaction before committing")
 
 type CommittedTransaction struct {
 	commitTimestamp uint64
