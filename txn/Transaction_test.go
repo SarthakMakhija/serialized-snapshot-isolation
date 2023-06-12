@@ -10,7 +10,7 @@ import (
 func TestGetsANonExistingKeyInAReadonlyTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
-	transaction := NewReadonlyTransaction(memTable, NewOracle())
+	transaction := NewReadonlyTransaction(NewOracle(NewTransactionExecutor(memTable)))
 	_, ok := transaction.Get([]byte("non-existing"))
 
 	assert.Equal(t, false, ok)
@@ -20,7 +20,7 @@ func TestGetsAnExistingKeyInAReadonlyTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 	memTable.PutOrUpdate(mvcc.NewVersionedKey([]byte("HDD"), 1), mvcc.NewValue([]byte("Hard disk")))
 
-	transaction := NewReadonlyTransaction(memTable, NewOracle())
+	transaction := NewReadonlyTransaction(NewOracle(NewTransactionExecutor(memTable)))
 	value, ok := transaction.Get([]byte("HDD"))
 
 	assert.Equal(t, true, ok)
@@ -30,8 +30,8 @@ func TestGetsAnExistingKeyInAReadonlyTransaction(t *testing.T) {
 func TestCommitsAnEmptyReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
-	oracle := NewOracle()
-	transaction := NewReadWriteTransaction(memTable, oracle)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
+	transaction := NewReadWriteTransaction(oracle)
 
 	_, err := transaction.Commit()
 
@@ -42,15 +42,15 @@ func TestCommitsAnEmptyReadWriteTransaction(t *testing.T) {
 func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
-	oracle := NewOracle()
-	transaction := NewReadWriteTransaction(memTable, oracle)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
+	transaction := NewReadWriteTransaction(oracle)
 	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state disk"))
 
 	done, _ := transaction.Commit()
 	<-done
 
-	readonlyTransaction := NewReadonlyTransaction(memTable, oracle)
+	readonlyTransaction := NewReadonlyTransaction(oracle)
 
 	value, ok := readonlyTransaction.Get([]byte("HDD"))
 	assert.Equal(t, true, ok)
@@ -67,7 +67,7 @@ func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 func TestGetsTheValueFromAKeyInAReadWriteTransactionFromBatch(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
-	transaction := NewReadWriteTransaction(memTable, NewOracle())
+	transaction := NewReadWriteTransaction(NewOracle(NewTransactionExecutor(memTable)))
 	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	value, ok := transaction.Get([]byte("HDD"))
@@ -81,7 +81,7 @@ func TestGetsTheValueFromAKeyInAReadWriteTransactionFromBatch(t *testing.T) {
 func TestTracksReadsInAReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
-	transaction := NewReadWriteTransaction(memTable, NewOracle())
+	transaction := NewReadWriteTransaction(NewOracle(NewTransactionExecutor(memTable)))
 	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	transaction.Get([]byte("SSD"))
 
@@ -97,7 +97,7 @@ func TestTracksReadsInAReadWriteTransaction(t *testing.T) {
 func TestDoesNotTrackReadsInAReadWriteTransactionIfKeysAreReadFromTheBatch(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
-	transaction := NewReadWriteTransaction(memTable, NewOracle())
+	transaction := NewReadWriteTransaction(NewOracle(NewTransactionExecutor(memTable)))
 	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	transaction.Get([]byte("HDD"))
 

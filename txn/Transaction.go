@@ -12,29 +12,27 @@ type ReadonlyTransaction struct {
 }
 
 type ReadWriteTransaction struct {
-	beginTimestamp      uint64
-	batch               *Batch
-	reads               [][]byte
-	transactionExecutor *TransactionExecutor
-	memtable            *mvcc.MemTable
-	oracle              *Oracle
+	beginTimestamp uint64
+	batch          *Batch
+	reads          [][]byte
+	memtable       *mvcc.MemTable
+	oracle         *Oracle
 }
 
-func NewReadonlyTransaction(memtable *mvcc.MemTable, oracle *Oracle) *ReadonlyTransaction {
+func NewReadonlyTransaction(oracle *Oracle) *ReadonlyTransaction {
 	return &ReadonlyTransaction{
 		beginTimestamp: oracle.beginTimestamp(),
 		oracle:         oracle,
-		memtable:       memtable,
+		memtable:       oracle.transactionExecutor.memtable,
 	}
 }
 
-func NewReadWriteTransaction(memtable *mvcc.MemTable, oracle *Oracle) *ReadWriteTransaction {
+func NewReadWriteTransaction(oracle *Oracle) *ReadWriteTransaction {
 	return &ReadWriteTransaction{
-		beginTimestamp:      oracle.beginTimestamp(),
-		batch:               NewBatch(),
-		transactionExecutor: NewTransactionExecutor(memtable),
-		oracle:              oracle,
-		memtable:            memtable,
+		beginTimestamp: oracle.beginTimestamp(),
+		batch:          NewBatch(),
+		oracle:         oracle,
+		memtable:       oracle.transactionExecutor.memtable,
 	}
 }
 
@@ -70,5 +68,5 @@ func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return transaction.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp)), nil
+	return transaction.oracle.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp)), nil
 }

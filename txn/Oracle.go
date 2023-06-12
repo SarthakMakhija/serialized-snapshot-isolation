@@ -14,18 +14,16 @@ type Oracle struct {
 	lock                  sync.Mutex
 	executorLock          sync.Mutex
 	nextTimestamp         uint64
+	transactionExecutor   *TransactionExecutor
 	beginTimestampMark    *TransactionBeginTimestampMark
 	committedTransactions []CommittedTransaction
 }
 
-// NewOracle
-// TODO: nextTimestamp is initialized to 1, will change later
-// TODO: committedTransactions need to be cleaned up
-// TODO: needs to have a TransactionBeginTimestampMark
-func NewOracle() *Oracle {
+func NewOracle(transactionExecutor *TransactionExecutor) *Oracle {
 	return &Oracle{
-		nextTimestamp:      1,
-		beginTimestampMark: NewTransactionBeginTimestampMark(),
+		nextTimestamp:       1,
+		transactionExecutor: transactionExecutor,
+		beginTimestampMark:  NewTransactionBeginTimestampMark(),
 	}
 }
 

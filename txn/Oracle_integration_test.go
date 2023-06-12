@@ -8,10 +8,12 @@ import (
 )
 
 func TestBeginTimestampMarkWithASingleTransaction(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
+
 	beginMark := oracle.beginTimestampMark
 
-	transaction := NewReadWriteTransaction(mvcc.NewMemTable(10), oracle)
+	transaction := NewReadWriteTransaction(oracle)
 	transaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
@@ -22,16 +24,16 @@ func TestBeginTimestampMarkWithASingleTransaction(t *testing.T) {
 }
 
 func TestBeginTimestampMarkWithTwoTransactions(t *testing.T) {
-	oracle := NewOracle()
 	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
 	beginMark := oracle.beginTimestampMark
 
-	transaction := NewReadWriteTransaction(memTable, oracle)
+	transaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
 
-	anotherTransaction := NewReadWriteTransaction(memTable, oracle)
+	anotherTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
 	assert.Equal(t, uint64(2), commitTimestamp)
 
@@ -40,23 +42,23 @@ func TestBeginTimestampMarkWithTwoTransactions(t *testing.T) {
 }
 
 func TestCleanUpOfCommittedTransactions(t *testing.T) {
-	oracle := NewOracle()
 	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
 	beginMark := oracle.beginTimestampMark
 
-	transaction := NewReadWriteTransaction(memTable, oracle)
+	transaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
 
-	anotherTransaction := NewReadWriteTransaction(memTable, oracle)
+	anotherTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
 	assert.Equal(t, uint64(2), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
 	assert.Equal(t, uint64(1), beginMark.DoneTill())
 
-	thirdTransaction := NewReadWriteTransaction(memTable, oracle)
+	thirdTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(thirdTransaction)
 	assert.Equal(t, uint64(3), commitTimestamp)
 

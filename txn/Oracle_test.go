@@ -8,14 +8,16 @@ import (
 )
 
 func TestGetsTheBeginTimestamp(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 	assert.Equal(t, uint64(0), oracle.beginTimestamp())
 }
 
 func TestGetsTheBeginTimestampAfterACommit(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
-	transaction := NewReadWriteTransaction(mvcc.NewMemTable(10), oracle)
+	transaction := NewReadWriteTransaction(oracle)
 	transaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
@@ -25,9 +27,10 @@ func TestGetsTheBeginTimestampAfterACommit(t *testing.T) {
 }
 
 func TestGetsCommitTimestampForTransactionGivenNoTransactionsAreCurrentlyTracked(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
-	transaction := NewReadWriteTransaction(mvcc.NewMemTable(10), oracle)
+	transaction := NewReadWriteTransaction(oracle)
 	transaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
@@ -35,16 +38,16 @@ func TestGetsCommitTimestampForTransactionGivenNoTransactionsAreCurrentlyTracked
 }
 
 func TestGetsCommitTimestampFor2Transactions(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
-	memtable := mvcc.NewMemTable(10)
-	aTransaction := NewReadWriteTransaction(memtable, oracle)
+	aTransaction := NewReadWriteTransaction(oracle)
 	aTransaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
 
-	anotherTransaction := NewReadWriteTransaction(memtable, oracle)
+	anotherTransaction := NewReadWriteTransaction(oracle)
 	anotherTransaction.Get([]byte("SSD"))
 
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
@@ -52,17 +55,17 @@ func TestGetsCommitTimestampFor2Transactions(t *testing.T) {
 }
 
 func TestGetsCommitTimestampFor2TransactionsGivenOneTransactionReadTheKeyThatTheOtherWrites(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
-	memtable := mvcc.NewMemTable(10)
-	aTransaction := NewReadWriteTransaction(memtable, oracle)
+	aTransaction := NewReadWriteTransaction(oracle)
 	aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
 	assert.Equal(t, 1, len(oracle.committedTransactions))
 
-	anotherTransaction := NewReadWriteTransaction(memtable, oracle)
+	anotherTransaction := NewReadWriteTransaction(oracle)
 	anotherTransaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
@@ -70,21 +73,21 @@ func TestGetsCommitTimestampFor2TransactionsGivenOneTransactionReadTheKeyThatThe
 }
 
 func TestErrorsForOneTransaction(t *testing.T) {
-	oracle := NewOracle()
+	memTable := mvcc.NewMemTable(10)
+	oracle := NewOracle(NewTransactionExecutor(memTable))
 
-	memtable := mvcc.NewMemTable(10)
-	aTransaction := NewReadWriteTransaction(memtable, oracle)
+	aTransaction := NewReadWriteTransaction(oracle)
 	aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
 	assert.Equal(t, 1, len(oracle.committedTransactions))
 
-	anotherTransaction := NewReadWriteTransaction(memtable, oracle)
+	anotherTransaction := NewReadWriteTransaction(oracle)
 	anotherTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk drive"))
 	anotherTransaction.Get([]byte("HDD"))
 
-	thirdTransaction := NewReadWriteTransaction(memtable, oracle)
+	thirdTransaction := NewReadWriteTransaction(oracle)
 	thirdTransaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
