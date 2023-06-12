@@ -5,8 +5,6 @@ import (
 	"sync"
 )
 
-// MemTable
-// TODO: apply lock
 type MemTable struct {
 	lock           sync.RWMutex
 	head           *SkiplistNode
