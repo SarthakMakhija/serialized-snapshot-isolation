@@ -11,7 +11,7 @@ type KeyValueDb struct {
 	oracle *txn.Oracle
 }
 
-func NewKeyValueDb(skiplistMaxLevel int) *KeyValueDb {
+func NewKeyValueDb(skiplistMaxLevel uint8) *KeyValueDb {
 	return &KeyValueDb{
 		oracle: txn.NewOracle(
 			txn.NewTransactionExecutor(mvcc.NewMemTable(skiplistMaxLevel)),

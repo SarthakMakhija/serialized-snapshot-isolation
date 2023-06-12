@@ -10,7 +10,7 @@ type SkiplistNode struct {
 	forwards []*SkiplistNode
 }
 
-func newSkiplistNode(key VersionedKey, value Value, level int) *SkiplistNode {
+func newSkiplistNode(key VersionedKey, value Value, level uint8) *SkiplistNode {
 	return &SkiplistNode{
 		key:      key,
 		value:    value,
@@ -33,7 +33,7 @@ func (node *SkiplistNode) putOrUpdate(key VersionedKey, value Value, levelGenera
 	if current == nil || current.key.compare(key) != 0 {
 		newLevel := levelGenerator.Generate()
 		newNode := newSkiplistNode(key, value, newLevel)
-		for level := 0; level < newLevel; level++ {
+		for level := uint8(0); level < newLevel; level++ {
 			newNode.forwards[level] = positions[level].forwards[level]
 			positions[level].forwards[level] = newNode
 		}

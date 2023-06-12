@@ -11,7 +11,7 @@ type MemTable struct {
 	levelGenerator utils.LevelGenerator
 }
 
-func NewMemTable(maxLevel int) *MemTable {
+func NewMemTable(maxLevel uint8) *MemTable {
 	return &MemTable{
 		head:           newSkiplistNode(emptyVersionedKey(), emptyValue(), maxLevel),
 		levelGenerator: utils.NewLevelGenerator(maxLevel),
