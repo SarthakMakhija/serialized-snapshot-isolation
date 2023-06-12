@@ -8,7 +8,7 @@ import (
 )
 
 func TestTransactionBeginMarkWithASingleTransaction(t *testing.T) {
-	transactionBeginMark := NewTransactionBeginMark()
+	transactionBeginMark := NewTransactionBeginTimestampMark()
 	transactionBeginMark.Begin(1)
 	transactionBeginMark.Finish(1)
 
@@ -18,7 +18,7 @@ func TestTransactionBeginMarkWithASingleTransaction(t *testing.T) {
 }
 
 func TestTransactionBeginMarkWithTwoTransactions(t *testing.T) {
-	transactionBeginMark := NewTransactionBeginMark()
+	transactionBeginMark := NewTransactionBeginTimestampMark()
 	transactionBeginMark.Begin(1)
 	transactionBeginMark.Begin(2)
 
@@ -31,7 +31,7 @@ func TestTransactionBeginMarkWithTwoTransactions(t *testing.T) {
 }
 
 func TestTransactionBeginMarkWithAFewTransactions(t *testing.T) {
-	transactionBeginMark := NewTransactionBeginMark()
+	transactionBeginMark := NewTransactionBeginTimestampMark()
 	transactionBeginMark.Begin(1)
 	transactionBeginMark.Begin(1)
 	transactionBeginMark.Begin(1)
@@ -48,7 +48,7 @@ func TestTransactionBeginMarkWithAFewTransactions(t *testing.T) {
 }
 
 func TestTransactionBeginMarkWithTwoConcurrentTransactions(t *testing.T) {
-	transactionBeginMark := NewTransactionBeginMark()
+	transactionBeginMark := NewTransactionBeginTimestampMark()
 
 	var wg sync.WaitGroup
 	wg.Add(2)
@@ -72,7 +72,7 @@ func TestTransactionBeginMarkWithTwoConcurrentTransactions(t *testing.T) {
 }
 
 func TestTransactionBeginMarkWithConcurrentTransactions(t *testing.T) {
-	transactionBeginMark := NewTransactionBeginMark()
+	transactionBeginMark := NewTransactionBeginTimestampMark()
 
 	var wg sync.WaitGroup
 	wg.Add(100)

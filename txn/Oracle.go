@@ -14,15 +14,18 @@ type Oracle struct {
 	lock                  sync.Mutex
 	executorLock          sync.Mutex
 	nextTimestamp         uint64
+	beginTimestampMark    *TransactionBeginTimestampMark
 	committedTransactions []CommittedTransaction
 }
 
 // NewOracle
 // TODO: nextTimestamp is initialized to 1, will change later
 // TODO: committedTransactions need to be cleaned up
+// TODO: needs to have a TransactionBeginTimestampMark
 func NewOracle() *Oracle {
 	return &Oracle{
-		nextTimestamp: 1,
+		nextTimestamp:      1,
+		beginTimestampMark: NewTransactionBeginTimestampMark(),
 	}
 }
 
@@ -30,8 +33,8 @@ func (oracle *Oracle) beginTimestamp() uint64 {
 	oracle.lock.Lock()
 	defer oracle.lock.Unlock()
 
-	//TODO: may be wait to ensure that the commits are done upto this point
 	beginTimestamp := oracle.nextTimestamp - 1
+	oracle.beginTimestampMark.Begin(beginTimestamp)
 	return beginTimestamp
 }
 
@@ -42,6 +45,8 @@ func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction)
 	if oracle.hasConflictFor(transaction) {
 		return 0, txnErrors.ConflictErr
 	}
+
+	oracle.doneBeginTimestamp(transaction)
 
 	commitTimestamp := oracle.nextTimestamp
 	oracle.nextTimestamp = oracle.nextTimestamp + 1
@@ -63,6 +68,10 @@ func (oracle *Oracle) hasConflictFor(transaction *ReadWriteTransaction) bool {
 		}
 	}
 	return false
+}
+
+func (oracle *Oracle) doneBeginTimestamp(transaction *ReadWriteTransaction) {
+	oracle.beginTimestampMark.Finish(transaction.beginTimestamp)
 }
 
 func (oracle *Oracle) trackReadyToCommitTransaction(commitTimestamp uint64, transaction *ReadWriteTransaction) {

@@ -26,14 +26,14 @@ type Mark struct {
 	done      bool
 }
 
-type TransactionBeginMark struct {
+type TransactionBeginTimestampMark struct {
 	doneTill    atomic.Uint64
 	markChannel chan Mark
 	stopChannel chan struct{}
 }
 
-func NewTransactionBeginMark() *TransactionBeginMark {
-	transactionMark := &TransactionBeginMark{
+func NewTransactionBeginTimestampMark() *TransactionBeginTimestampMark {
+	transactionMark := &TransactionBeginTimestampMark{
 		markChannel: make(chan Mark),
 		stopChannel: make(chan struct{}),
 	}
@@ -41,23 +41,23 @@ func NewTransactionBeginMark() *TransactionBeginMark {
 	return transactionMark
 }
 
-func (beginMark *TransactionBeginMark) Begin(timestamp uint64) {
+func (beginMark *TransactionBeginTimestampMark) Begin(timestamp uint64) {
 	beginMark.markChannel <- Mark{timestamp: timestamp, done: false}
 }
 
-func (beginMark *TransactionBeginMark) Finish(timestamp uint64) {
+func (beginMark *TransactionBeginTimestampMark) Finish(timestamp uint64) {
 	beginMark.markChannel <- Mark{timestamp: timestamp, done: true}
 }
 
-func (beginMark *TransactionBeginMark) Stop() {
+func (beginMark *TransactionBeginTimestampMark) Stop() {
 	beginMark.stopChannel <- struct{}{}
 }
 
-func (beginMark *TransactionBeginMark) DoneTill() uint64 {
+func (beginMark *TransactionBeginTimestampMark) DoneTill() uint64 {
 	return beginMark.doneTill.Load()
 }
 
-func (beginMark *TransactionBeginMark) spin() {
+func (beginMark *TransactionBeginTimestampMark) spin() {
 	var orderedTransactionTimestamps TransactionBeginTimestampHeap
 	pendingTransactionRequestsByTimestamp := make(map[uint64]int)
 
