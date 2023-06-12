@@ -5,6 +5,8 @@ import (
 	"snapshot-isolation/txn"
 )
 
+// KeyValueDb
+// TODO: support isolation
 type KeyValueDb struct {
 	oracle *txn.Oracle
 }

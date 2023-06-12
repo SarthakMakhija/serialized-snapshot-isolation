@@ -4,6 +4,8 @@ import (
 	"snapshot-isolation/mvcc/utils"
 )
 
+// MemTable
+// TODO: apply lock
 type MemTable struct {
 	head           *SkiplistNode
 	levelGenerator utils.LevelGenerator
