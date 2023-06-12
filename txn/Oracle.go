@@ -44,7 +44,7 @@ func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction)
 		return 0, txnErrors.ConflictErr
 	}
 
-	oracle.finishBeginTimestamp(transaction)
+	oracle.finishBeginTimestampForReadWriteTransaction(transaction)
 	oracle.cleanupCommittedTransactions()
 
 	commitTimestamp := oracle.nextTimestamp
@@ -69,7 +69,11 @@ func (oracle *Oracle) hasConflictFor(transaction *ReadWriteTransaction) bool {
 	return false
 }
 
-func (oracle *Oracle) finishBeginTimestamp(transaction *ReadWriteTransaction) {
+func (oracle *Oracle) finishBeginTimestampForReadWriteTransaction(transaction *ReadWriteTransaction) {
+	oracle.beginTimestampMark.Finish(transaction.beginTimestamp)
+}
+
+func (oracle *Oracle) finishBeginTimestampForReadonlyTransaction(transaction *ReadonlyTransaction) {
 	oracle.beginTimestampMark.Finish(transaction.beginTimestamp)
 }
 

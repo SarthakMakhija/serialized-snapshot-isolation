@@ -41,6 +41,10 @@ func (transaction *ReadonlyTransaction) Get(key []byte) (mvcc.Value, bool) {
 	return transaction.memtable.Get(versionedKey)
 }
 
+func (transaction *ReadonlyTransaction) Finish() {
+	transaction.oracle.finishBeginTimestampForReadonlyTransaction(transaction)
+}
+
 func (transaction *ReadWriteTransaction) Get(key []byte) (mvcc.Value, bool) {
 	if value, ok := transaction.batch.Get(key); ok {
 		return mvcc.NewValue(value), true
@@ -69,4 +73,8 @@ func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 		return nil, err
 	}
 	return transaction.oracle.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp)), nil
+}
+
+func (transaction *ReadWriteTransaction) Finish() {
+	transaction.oracle.finishBeginTimestampForReadWriteTransaction(transaction)
 }

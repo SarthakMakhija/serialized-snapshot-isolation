@@ -15,6 +15,7 @@ func TestBeginTimestampMarkWithASingleTransaction(t *testing.T) {
 
 	transaction := NewReadWriteTransaction(oracle)
 	transaction.Get([]byte("HDD"))
+	transaction.Finish()
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
@@ -31,10 +32,12 @@ func TestBeginTimestampMarkWithTwoTransactions(t *testing.T) {
 
 	transaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
+	transaction.Finish()
 	assert.Equal(t, uint64(1), commitTimestamp)
 
 	anotherTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
+	anotherTransaction.Finish()
 	assert.Equal(t, uint64(2), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
@@ -49,10 +52,12 @@ func TestCleanUpOfCommittedTransactions(t *testing.T) {
 
 	transaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
+	transaction.Finish()
 	assert.Equal(t, uint64(1), commitTimestamp)
 
 	anotherTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
+	anotherTransaction.Finish()
 	assert.Equal(t, uint64(2), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
@@ -60,6 +65,7 @@ func TestCleanUpOfCommittedTransactions(t *testing.T) {
 
 	thirdTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(thirdTransaction)
+	thirdTransaction.Finish()
 	assert.Equal(t, uint64(3), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
