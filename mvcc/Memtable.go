@@ -2,11 +2,13 @@ package mvcc
 
 import (
 	"snapshot-isolation/mvcc/utils"
+	"sync"
 )
 
 // MemTable
 // TODO: apply lock
 type MemTable struct {
+	lock           sync.RWMutex
 	head           *SkiplistNode
 	levelGenerator utils.LevelGenerator
 }
@@ -19,9 +21,15 @@ func NewMemTable(maxLevel uint8) *MemTable {
 }
 
 func (memTable *MemTable) PutOrUpdate(key VersionedKey, value Value) {
+	memTable.lock.Lock()
+	defer memTable.lock.Unlock()
+
 	memTable.head.putOrUpdate(key, value, memTable.levelGenerator)
 }
 
 func (memTable *MemTable) Get(key VersionedKey) (Value, bool) {
+	memTable.lock.RLock()
+	defer memTable.lock.RUnlock()
+
 	return memTable.head.get(key)
 }
