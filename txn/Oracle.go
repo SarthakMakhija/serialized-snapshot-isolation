@@ -46,12 +46,13 @@ func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction)
 		return 0, txnErrors.ConflictErr
 	}
 
-	oracle.doneBeginTimestamp(transaction)
+	oracle.finishBeginTimestamp(transaction)
+	oracle.cleanupCommittedTransactions()
 
 	commitTimestamp := oracle.nextTimestamp
 	oracle.nextTimestamp = oracle.nextTimestamp + 1
 
-	oracle.trackReadyToCommitTransaction(commitTimestamp, transaction)
+	oracle.trackReadyToCommitTransaction(transaction, commitTimestamp)
 	return commitTimestamp, nil
 }
 
@@ -70,11 +71,24 @@ func (oracle *Oracle) hasConflictFor(transaction *ReadWriteTransaction) bool {
 	return false
 }
 
-func (oracle *Oracle) doneBeginTimestamp(transaction *ReadWriteTransaction) {
+func (oracle *Oracle) finishBeginTimestamp(transaction *ReadWriteTransaction) {
 	oracle.beginTimestampMark.Finish(transaction.beginTimestamp)
 }
 
-func (oracle *Oracle) trackReadyToCommitTransaction(commitTimestamp uint64, transaction *ReadWriteTransaction) {
+func (oracle *Oracle) cleanupCommittedTransactions() {
+	updatedCommittedTransactions := oracle.committedTransactions[:0]
+	maxBeginTransactionTimestamp := oracle.beginTimestampMark.DoneTill()
+
+	for _, transaction := range oracle.committedTransactions {
+		if transaction.commitTimestamp <= maxBeginTransactionTimestamp {
+			continue
+		}
+		updatedCommittedTransactions = append(updatedCommittedTransactions, transaction)
+	}
+	oracle.committedTransactions = updatedCommittedTransactions
+}
+
+func (oracle *Oracle) trackReadyToCommitTransaction(transaction *ReadWriteTransaction, commitTimestamp uint64) {
 	oracle.committedTransactions = append(oracle.committedTransactions, CommittedTransaction{
 		commitTimestamp: commitTimestamp,
 		transaction:     transaction,
