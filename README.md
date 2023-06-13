@@ -1,7 +1,7 @@
-# snapshot-isolation (WIP)
-[![Go](https://github.com/SarthakMakhija/snapshot-isolation/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/snapshot-isolation/actions/workflows/build.yml)
+# serialized-snapshot-isolation (WIP)
+[![Go](https://github.com/SarthakMakhija/serialized-snapshot-isolation/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/serialized-snapshot-isolation/actions/workflows/build.yml)
 
-The idea is to provide an implementation of **snapshot transaction isolation** and **serialized snapshot isolation** in a tiny MVCC based in-memory store.
+The idea is to provide an implementation of **serialized snapshot isolation** in a tiny MVCC based in-memory store.
 The implementation will be used alongside my [storage engine workshop](https://github.com/SarthakMakhija/storage-engine-workshop-template).
 
 The focus is only on the **I** part of the **ACID** transactions. The following ideas will be implemented:
@@ -9,7 +9,6 @@ The focus is only on the **I** part of the **ACID** transactions. The following 
   - [X] Put
   - [X] Update
   - [X] Get
-- [ ] Transaction implementation with snapshot isolation
 - [ ] Transaction implementation with serialized snapshot isolation
 
 # Snapshot isolation
@@ -26,6 +25,8 @@ Snapshot isolation prevents **dirty read**, **fuzzy read**, **phantom read** and
 However, it can result in **write skew**. 
 
 *More details shall be covered in the blog.*
+
+**This repository implements serialized snapshot isolation**
 
 # Serialized snapshot isolation
 To implement serialized snapshot isolation, databases (and KV stores) maintain multiple versions of the data. Each
