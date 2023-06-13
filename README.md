@@ -43,3 +43,7 @@ A transaction will have to abort if its read set is modified by other concurrent
 Serialized snapshot isolation prevents **dirty read**, **fuzzy read**, **phantom read**, **lost update** and **write skew** anomalies.
 
 *More details shall be covered in the blog.*
+
+# References
+- [A critique of snapshot isolation](https://dl.acm.org/doi/10.1145/2168836.2168853)
+- [Badger](https://github.com/dgraph-io/badger)
