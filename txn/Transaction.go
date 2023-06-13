@@ -93,7 +93,8 @@ func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 		return nil, errors.EmptyTransactionErr
 	}
 
-	//Send the transaction to the executor in the increasing order of commit timestamp
+	// Send the transaction to the executor in the increasing order of the commitTimestamp.
+	// If a commit with the commitTimestamp 102 is applied, it is assumed that the commit with commitTimestamp 101 is already available.
 	transaction.oracle.executorLock.Lock()
 	defer transaction.oracle.executorLock.Unlock()
 
