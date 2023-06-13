@@ -24,7 +24,7 @@ Snapshot isolation prevents **write-write** conflict. Two transaction can confli
 Snapshot isolation prevents **dirty read**, **fuzzy read**, **phantom read** and **lost update** anomalies. 
 However, it can result in **write skew**. 
 
-*More details shall be covered in the blog.*
+*More details shall be covered in the blog. (Pending).*
 
 **This repository implements serialized snapshot isolation**
 
@@ -42,7 +42,7 @@ A transaction will have to abort if its read set is modified by other concurrent
 
 Serialized snapshot isolation prevents **dirty read**, **fuzzy read**, **phantom read**, **lost update** and **write skew** anomalies.
 
-*More details shall be covered in the blog.*
+*More details shall be covered in the blog. (Pending).*
 
 # References
 - [A critique of snapshot isolation](https://dl.acm.org/doi/10.1145/2168836.2168853)
