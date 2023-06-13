@@ -52,10 +52,10 @@ func (transaction *ReadonlyTransaction) Get(key []byte) (mvcc.Value, bool) {
 	return transaction.memtable.Get(versionedKey)
 }
 
-// Finish indicates the end of ReadonlyTransaction.
+// FinishBeginTimestampForReadonlyTransaction indicates the end of ReadonlyTransaction.
 // It is used to indicate the TransactionTimestampMark inside Oracle that all the transactions upto a given `beginTimestamp`
 // are done. (More on this in Oracle).
-func (transaction *ReadonlyTransaction) Finish() {
+func (transaction *ReadonlyTransaction) FinishBeginTimestampForReadonlyTransaction() {
 	transaction.oracle.finishBeginTimestampForReadonlyTransaction(transaction)
 }
 
@@ -102,13 +102,15 @@ func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	noCallback := func() {}
-	return transaction.oracle.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp, noCallback)), nil
+	commitCallback := func() {
+		transaction.oracle.commitTimestampMark.Finish(commitTimestamp)
+	}
+	return transaction.oracle.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp, commitCallback)), nil
 }
 
-// Finish indicates the end of ReadWriteTransaction.
+// FinishBeginTimestampForReadWriteTransaction indicates the end of ReadWriteTransaction.
 // It is used to indicate the TransactionTimestampMark inside Oracle that all the transactions upto a given `beginTimestamp`
 // are done. (More on this in Oracle).
-func (transaction *ReadWriteTransaction) Finish() {
+func (transaction *ReadWriteTransaction) FinishBeginTimestampForReadWriteTransaction() {
 	transaction.oracle.finishBeginTimestampForReadWriteTransaction(transaction)
 }

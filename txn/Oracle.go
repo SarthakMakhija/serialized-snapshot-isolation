@@ -1,6 +1,7 @@
 package txn
 
 import (
+	"context"
 	txnErrors "serialized-snapshot-isolation/txn/errors"
 	"sync"
 )
@@ -23,6 +24,7 @@ type Oracle struct {
 	nextTimestamp         uint64
 	transactionExecutor   *TransactionExecutor
 	beginTimestampMark    *TransactionTimestampMark
+	commitTimestampMark   *TransactionTimestampMark
 	committedTransactions []CommittedTransaction
 }
 
@@ -32,11 +34,16 @@ type Oracle struct {
 // Every segment of WAL can contain the last commitTimestamp. In order to recover nextTimestamp, we can read the latest
 // WAL segment (only the footer where we place the last commitTimestamp), get the last commitTimestamp and add 1 to it.
 func NewOracle(transactionExecutor *TransactionExecutor) *Oracle {
-	return &Oracle{
+	oracle := &Oracle{
 		nextTimestamp:       1,
 		transactionExecutor: transactionExecutor,
 		beginTimestampMark:  NewTransactionTimestampMark(),
+		commitTimestampMark: NewTransactionTimestampMark(),
 	}
+
+	oracle.beginTimestampMark.Finish(oracle.nextTimestamp - 1)
+	oracle.commitTimestampMark.Finish(oracle.nextTimestamp - 1)
+	return oracle
 }
 
 // CommittedTransactionLength returns the length of all the transactions that are committed and maintained in Oracle
@@ -48,10 +55,11 @@ func (oracle *Oracle) CommittedTransactionLength() int {
 // beginTimestamp = nextTimestamp - 1
 func (oracle *Oracle) beginTimestamp() uint64 {
 	oracle.lock.Lock()
-	defer oracle.lock.Unlock()
-
 	beginTimestamp := oracle.nextTimestamp - 1
 	oracle.beginTimestampMark.Begin(beginTimestamp)
+	oracle.lock.Unlock()
+
+	_ = oracle.commitTimestampMark.WaitForMark(context.Background(), beginTimestamp)
 	return beginTimestamp
 }
 
@@ -79,6 +87,7 @@ func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction)
 	oracle.nextTimestamp = oracle.nextTimestamp + 1
 
 	oracle.trackReadyToCommitTransaction(transaction, commitTimestamp)
+	oracle.commitTimestampMark.Begin(commitTimestamp)
 	return commitTimestamp, nil
 }
 

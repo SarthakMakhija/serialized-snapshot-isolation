@@ -15,9 +15,11 @@ func TestBeginTimestampMarkWithASingleTransaction(t *testing.T) {
 
 	transaction := NewReadWriteTransaction(oracle)
 	transaction.Get([]byte("HDD"))
-	transaction.Finish()
+	transaction.FinishBeginTimestampForReadWriteTransaction()
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(1), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
@@ -32,12 +34,15 @@ func TestBeginTimestampMarkWithTwoTransactions(t *testing.T) {
 
 	transaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
-	transaction.Finish()
+
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+	transaction.FinishBeginTimestampForReadWriteTransaction()
 	assert.Equal(t, uint64(1), commitTimestamp)
 
 	anotherTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
-	anotherTransaction.Finish()
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+	anotherTransaction.FinishBeginTimestampForReadWriteTransaction()
 	assert.Equal(t, uint64(2), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
@@ -52,12 +57,14 @@ func TestCleanUpOfCommittedTransactions(t *testing.T) {
 
 	transaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
-	transaction.Finish()
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+	transaction.FinishBeginTimestampForReadWriteTransaction()
 	assert.Equal(t, uint64(1), commitTimestamp)
 
 	anotherTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
-	anotherTransaction.Finish()
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+	anotherTransaction.FinishBeginTimestampForReadWriteTransaction()
 	assert.Equal(t, uint64(2), commitTimestamp)
 
 	time.Sleep(10 * time.Millisecond)
@@ -65,10 +72,11 @@ func TestCleanUpOfCommittedTransactions(t *testing.T) {
 
 	thirdTransaction := NewReadWriteTransaction(oracle)
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(thirdTransaction)
-	thirdTransaction.Finish()
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+	thirdTransaction.FinishBeginTimestampForReadWriteTransaction()
 	assert.Equal(t, uint64(3), commitTimestamp)
 
-	time.Sleep(10 * time.Millisecond)
+	time.Sleep(15 * time.Millisecond)
 	assert.Equal(t, uint64(2), beginMark.DoneTill())
 
 	committedTransactions := oracle.committedTransactions

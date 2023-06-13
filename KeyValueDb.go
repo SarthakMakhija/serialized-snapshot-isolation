@@ -19,14 +19,14 @@ func NewKeyValueDb(skiplistMaxLevel uint8) *KeyValueDb {
 
 func (db *KeyValueDb) Get(callback func(transaction *txn.ReadonlyTransaction)) {
 	transaction := txn.NewReadonlyTransaction(db.oracle)
-	defer transaction.Finish()
+	defer transaction.FinishBeginTimestampForReadonlyTransaction()
 
 	callback(transaction)
 }
 
 func (db *KeyValueDb) PutOrUpdate(callback func(transaction *txn.ReadWriteTransaction)) (<-chan struct{}, error) {
 	transaction := txn.NewReadWriteTransaction(db.oracle)
-	defer transaction.Finish()
+	defer transaction.FinishBeginTimestampForReadWriteTransaction()
 
 	callback(transaction)
 	return transaction.Commit()

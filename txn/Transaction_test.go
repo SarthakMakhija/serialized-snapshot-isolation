@@ -23,6 +23,8 @@ func TestGetsAnExistingKeyInAReadonlyTransaction(t *testing.T) {
 	oracle := NewOracle(NewTransactionExecutor(memTable))
 	oracle.nextTimestamp = 3
 
+	oracle.commitTimestampMark.Finish(2)
+
 	transaction := NewReadonlyTransaction(oracle)
 	value, ok := transaction.Get([]byte("HDD"))
 
@@ -34,6 +36,8 @@ func TestCommitsAnEmptyReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
 	oracle := NewOracle(NewTransactionExecutor(memTable))
+	oracle.commitTimestampMark.Finish(2)
+
 	transaction := NewReadWriteTransaction(oracle)
 
 	_, err := transaction.Commit()
@@ -46,6 +50,8 @@ func TestAttemptsToPutDuplicateKeysInATransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
 	oracle := NewOracle(NewTransactionExecutor(memTable))
+	oracle.commitTimestampMark.Finish(2)
+
 	transaction := NewReadWriteTransaction(oracle)
 
 	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))

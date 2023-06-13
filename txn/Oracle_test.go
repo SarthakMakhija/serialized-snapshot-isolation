@@ -21,8 +21,9 @@ func TestGetsTheBeginTimestampAfterACommit(t *testing.T) {
 	transaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(transaction)
-	assert.Equal(t, uint64(1), commitTimestamp)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
 
+	assert.Equal(t, uint64(1), commitTimestamp)
 	assert.Equal(t, uint64(1), oracle.beginTimestamp())
 }
 
@@ -45,12 +46,16 @@ func TestGetsCommitTimestampFor2Transactions(t *testing.T) {
 	aTransaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(1), commitTimestamp)
 
 	anotherTransaction := NewReadWriteTransaction(oracle)
 	anotherTransaction.Get([]byte("SSD"))
 
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(2), commitTimestamp)
 }
 
@@ -62,6 +67,8 @@ func TestGetsCommitTimestampFor2TransactionsGivenOneTransactionReadTheKeyThatThe
 	_ = aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(1), commitTimestamp)
 	assert.Equal(t, 1, len(oracle.committedTransactions))
 
@@ -69,6 +76,8 @@ func TestGetsCommitTimestampFor2TransactionsGivenOneTransactionReadTheKeyThatThe
 	anotherTransaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(2), commitTimestamp)
 }
 
@@ -80,6 +89,8 @@ func TestErrorsForOneTransaction(t *testing.T) {
 	_ = aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(1), commitTimestamp)
 	assert.Equal(t, 1, len(oracle.committedTransactions))
 
@@ -91,6 +102,8 @@ func TestErrorsForOneTransaction(t *testing.T) {
 	thirdTransaction.Get([]byte("HDD"))
 
 	commitTimestamp, _ = oracle.mayBeCommitTimestampFor(anotherTransaction)
+	oracle.commitTimestampMark.Finish(commitTimestamp)
+
 	assert.Equal(t, uint64(2), commitTimestamp)
 
 	_, err := oracle.mayBeCommitTimestampFor(thirdTransaction)
