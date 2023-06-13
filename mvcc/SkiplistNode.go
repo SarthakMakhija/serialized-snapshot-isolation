@@ -4,12 +4,18 @@ import (
 	"serialized-snapshot-isolation/mvcc/utils"
 )
 
+// SkiplistNode represents a node in the SkipList.
+// Each node contains the key/value pair and an array of forward pointers.
+// SkipListNode maintains VersionedKeys: each key has a version which is the commitTimestamp.
+// A sample Level0 of SkipListNode with HDD as the key can be represented as:
+// HDD1: Hard Disk -> HDD2: Hard disk -> HDD5: Hard disk drive. Here, 1, 2, and 5 are the versions of the key HDD.
 type SkiplistNode struct {
 	key      VersionedKey
 	value    Value
 	forwards []*SkiplistNode
 }
 
+// newSkiplistNode creates a new instance of SkiplistNode.
 func newSkiplistNode(key VersionedKey, value Value, level uint8) *SkiplistNode {
 	return &SkiplistNode{
 		key:      key,
@@ -18,6 +24,7 @@ func newSkiplistNode(key VersionedKey, value Value, level uint8) *SkiplistNode {
 	}
 }
 
+// putOrUpdate puts or updates the value corresponding to the incoming key.
 func (node *SkiplistNode) putOrUpdate(key VersionedKey, value Value, levelGenerator utils.LevelGenerator) bool {
 	current := node
 	positions := make([]*SkiplistNode, len(node.forwards))
@@ -42,6 +49,12 @@ func (node *SkiplistNode) putOrUpdate(key VersionedKey, value Value, levelGenera
 	return false
 }
 
+// get returns a pair of (Value, bool) for the incoming key.
+// It returns (Value, true) if the value exists for the incoming key, else (nil, false).
+// get attempts to find the key where:
+// 1. the version of the key < version of the incoming key &&
+// 2. the key prefixes match.
+// KeyPrefix is the actual key or the byte slice.
 func (node *SkiplistNode) get(key VersionedKey) (Value, bool) {
 	node, ok := node.matchingNode(key)
 	if ok {
