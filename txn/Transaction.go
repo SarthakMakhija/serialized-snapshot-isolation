@@ -53,7 +53,7 @@ func (transaction *ReadonlyTransaction) Get(key []byte) (mvcc.Value, bool) {
 }
 
 // Finish indicates the end of ReadonlyTransaction.
-// It is used to indicate the TransactionBeginTimestampMark inside Oracle that all the transactions upto a given `beginTimestamp`
+// It is used to indicate the TransactionTimestampMark inside Oracle that all the transactions upto a given `beginTimestamp`
 // are done. (More on this in Oracle).
 func (transaction *ReadonlyTransaction) Finish() {
 	transaction.oracle.finishBeginTimestampForReadonlyTransaction(transaction)
@@ -106,7 +106,7 @@ func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 }
 
 // Finish indicates the end of ReadWriteTransaction.
-// It is used to indicate the TransactionBeginTimestampMark inside Oracle that all the transactions upto a given `beginTimestamp`
+// It is used to indicate the TransactionTimestampMark inside Oracle that all the transactions upto a given `beginTimestamp`
 // are done. (More on this in Oracle).
 func (transaction *ReadWriteTransaction) Finish() {
 	transaction.oracle.finishBeginTimestampForReadWriteTransaction(transaction)

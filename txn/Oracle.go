@@ -22,7 +22,7 @@ type Oracle struct {
 	executorLock          sync.Mutex
 	nextTimestamp         uint64
 	transactionExecutor   *TransactionExecutor
-	beginTimestampMark    *TransactionBeginTimestampMark
+	beginTimestampMark    *TransactionTimestampMark
 	committedTransactions []CommittedTransaction
 }
 
@@ -35,7 +35,7 @@ func NewOracle(transactionExecutor *TransactionExecutor) *Oracle {
 	return &Oracle{
 		nextTimestamp:       1,
 		transactionExecutor: transactionExecutor,
-		beginTimestampMark:  NewTransactionBeginTimestampMark(),
+		beginTimestampMark:  NewTransactionTimestampMark(),
 	}
 }
 
@@ -102,7 +102,7 @@ func (oracle *Oracle) hasConflictFor(transaction *ReadWriteTransaction) bool {
 }
 
 // finishBeginTimestampForReadWriteTransaction indicates that the beginTimestamp of the transaction is finished.
-// This is an indication to the TransactionBeginTimestampMark that all the transactions upto a given `beginTimestamp`
+// This is an indication to the TransactionTimestampMark that all the transactions upto a given `beginTimestamp`
 // are done. This information will be used in cleaning up the committed transactions.
 func (oracle *Oracle) finishBeginTimestampForReadWriteTransaction(transaction *ReadWriteTransaction) {
 	oracle.beginTimestampMark.Finish(transaction.beginTimestamp)
