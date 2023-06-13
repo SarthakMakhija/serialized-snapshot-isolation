@@ -1,4 +1,4 @@
-package snapshot_isolation
+package serialized_snapshot_isolation
 
 import (
 	"github.com/stretchr/testify/assert"
