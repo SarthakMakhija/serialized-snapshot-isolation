@@ -75,6 +75,8 @@ func (batch *Batch) Contains(key []byte) bool {
 }
 
 // ToTimestampedBatch converts the batch to a TimestampedBatch.
+// TimestampedBatch also creates a doneChannel that will receive a notification when the transaction containing the TimestampedBatch is applied.
+// The notification is sent from TransactionExecutor.
 func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64) TimestampedBatch {
 	return TimestampedBatch{
 		batch:       batch,
