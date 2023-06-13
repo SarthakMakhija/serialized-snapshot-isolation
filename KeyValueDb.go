@@ -1,9 +1,13 @@
 package serialized_snapshot_isolation
 
 import (
+	"errors"
 	"serialized-snapshot-isolation/mvcc"
 	"serialized-snapshot-isolation/txn"
+	"sync/atomic"
 )
+
+var DbAlreadyStoppedErr = errors.New("Db is stopped, can not perform the operation")
 
 // KeyValueDb represents an in-memory store backed by multi-versioned SkipList.
 // It provides two behaviors: Get and PutOrUpdate which run in a transaction.
@@ -23,7 +27,8 @@ import (
 // If a transaction does not have any RW conflict, it gets a commitTimestamp which is used as a version in the keys that
 // get written to the SkipList.
 type KeyValueDb struct {
-	oracle *txn.Oracle
+	stopped atomic.Bool
+	oracle  *txn.Oracle
 }
 
 // NewKeyValueDb creates a new instance of KeyValueDb.
@@ -37,20 +42,34 @@ func NewKeyValueDb(skiplistMaxLevel uint8) *KeyValueDb {
 
 // Get takes a callback which receives a pointer to a txn.ReadonlyTransaction.
 // txn.ReadonlyTransaction provides Get method to look up the value for the key.
-func (db *KeyValueDb) Get(callback func(transaction *txn.ReadonlyTransaction)) {
+func (db *KeyValueDb) Get(callback func(transaction *txn.ReadonlyTransaction)) error {
+	if db.stopped.Load() {
+		return DbAlreadyStoppedErr
+	}
 	transaction := txn.NewReadonlyTransaction(db.oracle)
 	defer transaction.FinishBeginTimestampForReadonlyTransaction()
 
 	callback(transaction)
+	return nil
 }
 
 // PutOrUpdate takes a callback which receives a pointer to a txn.ReadWriteTransaction.
 // ReadWriteTransaction provides Get and PutOrUpdate to perform the required operations.
 // This method performs a commit as soon as the callback is done.
 func (db *KeyValueDb) PutOrUpdate(callback func(transaction *txn.ReadWriteTransaction)) (<-chan struct{}, error) {
+	if db.stopped.Load() {
+		return nil, DbAlreadyStoppedErr
+	}
 	transaction := txn.NewReadWriteTransaction(db.oracle)
 	defer transaction.FinishBeginTimestampForReadWriteTransaction()
 
 	callback(transaction)
 	return transaction.Commit()
+}
+
+// Stop stops the KeyValueDb which in turn stops the Oracle.
+func (db *KeyValueDb) Stop() {
+	if db.stopped.CompareAndSwap(false, true) {
+		db.oracle.Stop()
+	}
 }

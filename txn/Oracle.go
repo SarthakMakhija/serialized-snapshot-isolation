@@ -56,6 +56,13 @@ func (oracle *Oracle) CommittedTransactionLength() int {
 	return len(oracle.committedTransactions)
 }
 
+// Stop stops `beginTimestampMark`, `commitTimestampMark` and `transactionExecutor`.
+func (oracle *Oracle) Stop() {
+	oracle.beginTimestampMark.Stop()
+	oracle.commitTimestampMark.Stop()
+	oracle.transactionExecutor.Stop()
+}
+
 // beginTimestamp returns the beginTimestamp of a transaction.
 // beginTimestamp = nextTimestamp - 1
 // Before returning the beginTimestamp, the system performs a wait on the commitTimestampMark.

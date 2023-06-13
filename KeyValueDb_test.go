@@ -12,7 +12,7 @@ import (
 
 func TestGetsTheValueOfANonExistingKey(t *testing.T) {
 	db := NewKeyValueDb(10)
-	db.Get(func(transaction *txn.ReadonlyTransaction) {
+	_ = db.Get(func(transaction *txn.ReadonlyTransaction) {
 		_, exists := transaction.Get([]byte("non-existing"))
 		assert.Equal(t, false, exists)
 	})
@@ -32,7 +32,7 @@ func TestGetsTheValueOfAnExistingKey(t *testing.T) {
 	assert.Nil(t, err)
 	<-waitChannel
 
-	db.Get(func(transaction *txn.ReadonlyTransaction) {
+	_ = db.Get(func(transaction *txn.ReadonlyTransaction) {
 		value, exists := transaction.Get([]byte("HDD"))
 		assert.Equal(t, true, exists)
 		assert.Equal(t, []byte("Hard disk"), value.Slice())
@@ -57,7 +57,7 @@ func TestPutsMultipleKeyValuesInATransaction(t *testing.T) {
 	assert.Nil(t, err)
 	<-waitChannel
 
-	db.Get(func(transaction *txn.ReadonlyTransaction) {
+	_ = db.Get(func(transaction *txn.ReadonlyTransaction) {
 		for count := 1; count <= 100; count++ {
 			value, exists := transaction.Get([]byte("Key:" + strconv.Itoa(count)))
 			assert.Equal(t, true, exists)
@@ -123,4 +123,51 @@ func TestCommitTransactionAndCheckTheCommittedTransactionsInOracle(t *testing.T)
 	<-waitChannel
 
 	assert.Equal(t, 1, db.oracle.CommittedTransactionLength())
+}
+
+func TestAttemptsToGetFromAStoppedDb(t *testing.T) {
+	db := NewKeyValueDb(10)
+	db.Stop()
+
+	err := db.Get(func(transaction *txn.ReadonlyTransaction) {
+		_, _ = transaction.Get([]byte("non-existing"))
+	})
+
+	assert.Error(t, err)
+	assert.Equal(t, DbAlreadyStoppedErr, err)
+}
+
+func TestAttemptsToPutInAStoppedDb(t *testing.T) {
+	db := NewKeyValueDb(10)
+	db.Stop()
+
+	_, err := db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
+		_ = transaction.PutOrUpdate([]byte("isolation"), []byte("Snapshot"))
+	})
+
+	assert.Error(t, err)
+	assert.Equal(t, DbAlreadyStoppedErr, err)
+}
+
+func TestStopsTheDbConcurrently(t *testing.T) {
+	db := NewKeyValueDb(10)
+
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		db.Stop()
+	}()
+	go func() {
+		defer wg.Done()
+		db.Stop()
+	}()
+
+	wg.Wait()
+	err := db.Get(func(transaction *txn.ReadonlyTransaction) {
+		_, _ = transaction.Get([]byte("HDD"))
+	})
+	assert.Error(t, err)
+	assert.Equal(t, DbAlreadyStoppedErr, err)
 }
