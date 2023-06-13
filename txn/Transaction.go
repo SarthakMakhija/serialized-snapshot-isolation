@@ -102,7 +102,8 @@ func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	return transaction.oracle.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp)), nil
+	noCallback := func() {}
+	return transaction.oracle.transactionExecutor.Submit(transaction.batch.ToTimestampedBatch(commitTimestamp, noCallback)), nil
 }
 
 // Finish indicates the end of ReadWriteTransaction.

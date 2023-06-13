@@ -36,9 +36,10 @@ type Batch struct {
 // When a ReadWriteTransaction is ready to commit, the batch that is a part of the transaction, is given the commit timestamp.
 // The abstraction TimestampedBatch represents the Batch with the commit timestamp that is ready to commit.
 type TimestampedBatch struct {
-	batch       *Batch
-	timestamp   uint64
-	doneChannel chan struct{}
+	batch          *Batch
+	timestamp      uint64
+	doneChannel    chan struct{}
+	commitCallback func()
 }
 
 // NewBatch creates a new instance of Batch.
@@ -77,11 +78,14 @@ func (batch *Batch) Contains(key []byte) bool {
 // ToTimestampedBatch converts the batch to a TimestampedBatch.
 // TimestampedBatch also creates a doneChannel that will receive a notification when the transaction containing the TimestampedBatch is applied.
 // The notification is sent from TransactionExecutor.
-func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64) TimestampedBatch {
+// ToTimestampedBatch also takes a callback which is a function that will be called when the transaction containing the
+// TimestampedBatch is committed. This will happen from TransactionExecutor.
+func (batch *Batch) ToTimestampedBatch(commitTimestamp uint64, commitCallback func()) TimestampedBatch {
 	return TimestampedBatch{
-		batch:       batch,
-		timestamp:   commitTimestamp,
-		doneChannel: make(chan struct{}),
+		batch:          batch,
+		timestamp:      commitTimestamp,
+		doneChannel:    make(chan struct{}),
+		commitCallback: commitCallback,
 	}
 }
 
@@ -93,4 +97,9 @@ func (batch *Batch) IsEmpty() bool {
 // AllPairs returns all the Key/Value pairs that are a part of the Batch.
 func (timestampedBatch TimestampedBatch) AllPairs() []KeyValuePair {
 	return timestampedBatch.batch.pairs
+}
+
+// getCommitCallback returns the commit callback function.
+func (timestampedBatch TimestampedBatch) getCommitCallback() func() {
+	return timestampedBatch.commitCallback
 }

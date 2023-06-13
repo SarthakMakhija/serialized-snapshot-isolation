@@ -58,6 +58,7 @@ func (executor *TransactionExecutor) spin() {
 
 // apply converts all the Keys present in the TimestampedBatch to mvcc.VersionedKey and Value to mvcc.Value and
 // applies all these mvcc.VersionedKey/mvcc.Value pairs to the mvcc.MemTable.
+// After all the key/value pairs are applied, the commit callback is invoked.
 func (executor *TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
 	for _, keyValuePair := range timestampedBatch.AllPairs() {
 		executor.memtable.PutOrUpdate(
@@ -65,6 +66,7 @@ func (executor *TransactionExecutor) apply(timestampedBatch TimestampedBatch) {
 			mvcc.NewValue(keyValuePair.getValue()),
 		)
 	}
+	timestampedBatch.commitCallback()
 }
 
 // markApplied sends a notification to the doneChannel and closes the channel to indicate that the transaction is applied.
