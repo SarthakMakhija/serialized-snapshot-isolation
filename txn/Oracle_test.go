@@ -2,8 +2,8 @@ package txn
 
 import (
 	"github.com/stretchr/testify/assert"
-	"snapshot-isolation/mvcc"
-	"snapshot-isolation/txn/errors"
+	"serialized-snapshot-isolation/mvcc"
+	"serialized-snapshot-isolation/txn/errors"
 	"testing"
 )
 

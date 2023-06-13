@@ -2,8 +2,8 @@ package snapshot_isolation
 
 import (
 	"github.com/stretchr/testify/assert"
-	"snapshot-isolation/txn"
-	"snapshot-isolation/txn/errors"
+	"serialized-snapshot-isolation/txn"
+	"serialized-snapshot-isolation/txn/errors"
 	"strconv"
 	"sync"
 	"testing"

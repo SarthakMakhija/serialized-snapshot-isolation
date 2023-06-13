@@ -1,6 +1,6 @@
 package txn
 
-import "snapshot-isolation/mvcc"
+import "serialized-snapshot-isolation/mvcc"
 
 type TransactionExecutor struct {
 	batchChannel chan TimestampedBatch

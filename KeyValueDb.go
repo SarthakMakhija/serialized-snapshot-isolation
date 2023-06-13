@@ -1,8 +1,8 @@
 package snapshot_isolation
 
 import (
-	"snapshot-isolation/mvcc"
-	"snapshot-isolation/txn"
+	"serialized-snapshot-isolation/mvcc"
+	"serialized-snapshot-isolation/txn"
 )
 
 // KeyValueDb

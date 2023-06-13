@@ -1,7 +1,7 @@
 package txn
 
 import (
-	txnErrors "snapshot-isolation/txn/errors"
+	txnErrors "serialized-snapshot-isolation/txn/errors"
 	"sync"
 )
 

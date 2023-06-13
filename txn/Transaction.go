@@ -1,8 +1,8 @@
 package txn
 
 import (
-	"snapshot-isolation/mvcc"
-	"snapshot-isolation/txn/errors"
+	"serialized-snapshot-isolation/mvcc"
+	"serialized-snapshot-isolation/txn/errors"
 )
 
 type ReadonlyTransaction struct {
