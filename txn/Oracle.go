@@ -18,6 +18,10 @@ type CommittedTransaction struct {
 // commitTimestampOf(Key) < beginTimestampOf(transaction).
 // The current implementation uses nextTimestamp which denotes the timestamp that will be assigned as the commit timestamp
 // to the next transaction. The beginTimestamp is one less than the nextTimestamp.
+// beginTimestampMark is used to indicate till what timestamp have the transactions begun. This information is used to clean up
+// the committedTransactions.
+// commitTimestampMark is used to block the new transactions, so all previous commits are visible to a new read.
+// However, the system still reads the keys where commitTimestampOf(Key) < beginTimestampOf(transaction).
 type Oracle struct {
 	lock                  sync.Mutex
 	executorLock          sync.Mutex
@@ -33,6 +37,7 @@ type Oracle struct {
 // If we were to implement durability using WAL, we would load the value of the nextTimestamp from WAL.
 // Every segment of WAL can contain the last commitTimestamp. In order to recover nextTimestamp, we can read the latest
 // WAL segment (only the footer where we place the last commitTimestamp), get the last commitTimestamp and add 1 to it.
+// As a part creating a new instance of NewOracle, we also mark beginTimestampMark and commitTimestampMark as finished for timestamp 0.
 func NewOracle(transactionExecutor *TransactionExecutor) *Oracle {
 	oracle := &Oracle{
 		nextTimestamp:       1,
@@ -53,6 +58,8 @@ func (oracle *Oracle) CommittedTransactionLength() int {
 
 // beginTimestamp returns the beginTimestamp of a transaction.
 // beginTimestamp = nextTimestamp - 1
+// Before returning the beginTimestamp, the system performs a wait on the commitTimestampMark.
+// This wait is to ensure that all the commits till beginTimestamp are applied.
 func (oracle *Oracle) beginTimestamp() uint64 {
 	oracle.lock.Lock()
 	beginTimestamp := oracle.nextTimestamp - 1
@@ -71,6 +78,7 @@ func (oracle *Oracle) beginTimestamp() uint64 {
 // 2. committedTransactions are cleaned up.
 // 3. commitTimestamp is assigned to the transaction and the nextTimestamp is increased by 1
 // 4. The current transaction is tracked as CommittedTransaction
+// 5. commitTimestampMark is used to indicate that a transaction with the `commitTimestamp` has begun.
 // The cleanup of committedTransactions removes all the committed transactions Ti...Tj where the commitTimestamp of Ti <= maxBeginTransactionTimestamp.
 func (oracle *Oracle) mayBeCommitTimestampFor(transaction *ReadWriteTransaction) (uint64, error) {
 	oracle.lock.Lock()

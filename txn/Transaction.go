@@ -87,6 +87,8 @@ func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) e
 // 1. Acquiring an executorLock to ensure that the transaction are sent to the TransactionExecutor in the order of their commitTimestamp.
 // 2. Getting the commit timestamp for the transaction. Commit timestamp is only provided if the transaction does not have any RW conflict.
 // 3. Submitting the TimestampedBatch to the TransactionExecutor
+// 4. Passing a commit callback to the TimestampedBatch which is invoked when the entire batch is applied
+// 5. The commit callback informs the `commitTimestampMark` of Oracle that a transaction with `commitTimestamp` is done
 // More details on commitTimestamp are available in Oracle. Commits are executed serially and the details are available in TransactionExecutor.
 func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {
 	if transaction.batch.IsEmpty() {
