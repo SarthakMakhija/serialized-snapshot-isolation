@@ -27,6 +27,10 @@ func NewOracle(transactionExecutor *TransactionExecutor) *Oracle {
 	}
 }
 
+func (oracle *Oracle) CommittedTransactionLength() int {
+	return len(oracle.committedTransactions)
+}
+
 func (oracle *Oracle) beginTimestamp() uint64 {
 	oracle.lock.Lock()
 	defer oracle.lock.Unlock()

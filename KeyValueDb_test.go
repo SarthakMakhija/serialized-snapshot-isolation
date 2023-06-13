@@ -85,3 +85,28 @@ func TestInvolvesConflictingTransactions(t *testing.T) {
 	}()
 	wg.Wait()
 }
+
+func TestCommitTransactionAndCheckTheCommittedTransactionsInOracle(t *testing.T) {
+	db := NewKeyValueDb(10)
+	waitChannel, err := db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
+		_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	})
+	assert.Nil(t, err)
+	<-waitChannel
+
+	time.Sleep(10 * time.Millisecond) //allow transactionBeginTimestamp mark to be processed
+
+	_, err = db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {})
+	assert.Error(t, err)
+	assert.Equal(t, errors.EmptyTransactionErr, err)
+
+	time.Sleep(10 * time.Millisecond) //allow transactionBeginTimestamp mark to be processed
+
+	waitChannel, err = db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
+		_ = transaction.PutOrUpdate([]byte("isolation"), []byte("Snapshot"))
+	})
+	assert.Nil(t, err)
+	<-waitChannel
+
+	assert.Equal(t, 1, db.oracle.CommittedTransactionLength())
+}
