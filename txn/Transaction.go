@@ -55,8 +55,12 @@ func (transaction *ReadWriteTransaction) Get(key []byte) (mvcc.Value, bool) {
 	return transaction.memtable.Get(versionedKey)
 }
 
-func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) {
-	transaction.batch.Add(key, value)
+func (transaction *ReadWriteTransaction) PutOrUpdate(key []byte, value []byte) error {
+	err := transaction.batch.Add(key, value)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (transaction *ReadWriteTransaction) Commit() (<-chan struct{}, error) {

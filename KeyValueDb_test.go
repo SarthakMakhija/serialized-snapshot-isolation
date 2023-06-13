@@ -21,7 +21,7 @@ func TestGetsTheValueOfANonExistingKey(t *testing.T) {
 func TestGetsTheValueOfAnExistingKey(t *testing.T) {
 	db := NewKeyValueDb(10)
 	waitChannel, err := db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
-		transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+		_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	})
 	assert.Nil(t, err)
 	<-waitChannel
@@ -37,7 +37,7 @@ func TestPutsMultipleKeyValuesInATransaction(t *testing.T) {
 	db := NewKeyValueDb(10)
 	waitChannel, err := db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
 		for count := 1; count <= 100; count++ {
-			transaction.PutOrUpdate([]byte("Key:"+strconv.Itoa(count)), []byte("Value:"+strconv.Itoa(count)))
+			_ = transaction.PutOrUpdate([]byte("Key:"+strconv.Itoa(count)), []byte("Value:"+strconv.Itoa(count)))
 		}
 	})
 	assert.Nil(t, err)
@@ -64,7 +64,7 @@ func TestInvolvesConflictingTransactions(t *testing.T) {
 				time.Sleep(25 * time.Millisecond)
 			}
 			_, _ = transaction.Get([]byte("HDD"))
-			transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state drive"))
+			_ = transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state drive"))
 			delayCommit()
 		})
 		assert.Error(t, err)
@@ -77,7 +77,7 @@ func TestInvolvesConflictingTransactions(t *testing.T) {
 			delayCommit := func() {
 				time.Sleep(10 * time.Millisecond)
 			}
-			transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+			_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 			delayCommit()
 		})
 		assert.Nil(t, err)

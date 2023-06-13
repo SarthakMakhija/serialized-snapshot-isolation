@@ -59,7 +59,7 @@ func TestGetsCommitTimestampFor2TransactionsGivenOneTransactionReadTheKeyThatThe
 	oracle := NewOracle(NewTransactionExecutor(memTable))
 
 	aTransaction := NewReadWriteTransaction(oracle)
-	aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	_ = aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
@@ -77,14 +77,14 @@ func TestErrorsForOneTransaction(t *testing.T) {
 	oracle := NewOracle(NewTransactionExecutor(memTable))
 
 	aTransaction := NewReadWriteTransaction(oracle)
-	aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	_ = aTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	commitTimestamp, _ := oracle.mayBeCommitTimestampFor(aTransaction)
 	assert.Equal(t, uint64(1), commitTimestamp)
 	assert.Equal(t, 1, len(oracle.committedTransactions))
 
 	anotherTransaction := NewReadWriteTransaction(oracle)
-	anotherTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk drive"))
+	_ = anotherTransaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk drive"))
 	anotherTransaction.Get([]byte("HDD"))
 
 	thirdTransaction := NewReadWriteTransaction(oracle)

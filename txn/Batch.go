@@ -1,6 +1,9 @@
 package txn
 
-import "bytes"
+import (
+	"bytes"
+	"serialized-snapshot-isolation/txn/errors"
+)
 
 type KeyValuePair struct {
 	key   []byte
@@ -36,9 +39,12 @@ func NewBatch() *Batch {
 	return &Batch{}
 }
 
-func (batch *Batch) Add(key, value []byte) *Batch {
+func (batch *Batch) Add(key, value []byte) error {
+	if batch.Contains(key) {
+		return errors.DuplicateKeyInBatchErr
+	}
 	batch.pairs = append(batch.pairs, newKeyValuePair(key, value))
-	return batch
+	return nil
 }
 
 func (batch *Batch) Get(key []byte) ([]byte, bool) {

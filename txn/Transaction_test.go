@@ -39,13 +39,26 @@ func TestCommitsAnEmptyReadWriteTransaction(t *testing.T) {
 	assert.Equal(t, errors.EmptyTransactionErr, err)
 }
 
+func TestAttemptsToPutDuplicateKeysInATransaction(t *testing.T) {
+	memTable := mvcc.NewMemTable(10)
+
+	oracle := NewOracle(NewTransactionExecutor(memTable))
+	transaction := NewReadWriteTransaction(oracle)
+
+	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	err := transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk drive"))
+
+	assert.Error(t, err)
+	assert.Equal(t, errors.DuplicateKeyInBatchErr, err)
+}
+
 func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
 	oracle := NewOracle(NewTransactionExecutor(memTable))
 	transaction := NewReadWriteTransaction(oracle)
-	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
-	transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state disk"))
+	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	_ = transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state disk"))
 
 	done, _ := transaction.Commit()
 	<-done
@@ -68,7 +81,7 @@ func TestGetsTheValueFromAKeyInAReadWriteTransactionFromBatch(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
 	transaction := NewReadWriteTransaction(NewOracle(NewTransactionExecutor(memTable)))
-	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 
 	value, ok := transaction.Get([]byte("HDD"))
 	assert.Equal(t, true, ok)
@@ -82,7 +95,7 @@ func TestTracksReadsInAReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 
 	transaction := NewReadWriteTransaction(NewOracle(NewTransactionExecutor(memTable)))
-	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	transaction.Get([]byte("SSD"))
 
 	done, _ := transaction.Commit()
@@ -98,7 +111,7 @@ func TestDoesNotTrackReadsInAReadWriteTransactionIfKeysAreReadFromTheBatch(t *te
 	memTable := mvcc.NewMemTable(10)
 
 	transaction := NewReadWriteTransaction(NewOracle(NewTransactionExecutor(memTable)))
-	transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
+	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
 	transaction.Get([]byte("HDD"))
 
 	done, _ := transaction.Commit()
