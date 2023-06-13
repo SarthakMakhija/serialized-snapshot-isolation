@@ -1,4 +1,4 @@
-# serialized-snapshot-isolation (WIP)
+# serialized-snapshot-isolation
 [![Go](https://github.com/SarthakMakhija/serialized-snapshot-isolation/actions/workflows/build.yml/badge.svg)](https://github.com/SarthakMakhija/serialized-snapshot-isolation/actions/workflows/build.yml)
 
 The idea is to provide an implementation of **serialized snapshot isolation** in a tiny MVCC based in-memory store.
@@ -9,7 +9,7 @@ The focus is only on the **I** part of the **ACID** transactions. The following 
   - [X] Put
   - [X] Update
   - [X] Get
-- [ ] Transaction implementation with serialized snapshot isolation
+- [X] Transaction implementation with serialized snapshot isolation
 
 # Snapshot isolation
 To implement snapshot isolation, databases (and KV stores) maintain multiple versions of the data. Each
