@@ -17,11 +17,11 @@ func TestExecutesABatch(t *testing.T) {
 	doneChannel := executor.Submit(batch.ToTimestampedBatch(1))
 	<-doneChannel
 
-	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 1))
+	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk"), value.Slice())
 
-	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 1))
+	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Snapshot"), value.Slice())
 }
@@ -44,19 +44,19 @@ func TestExecutes2Batches(t *testing.T) {
 	doneChannel = executor.Submit(anotherBatch.ToTimestampedBatch(2))
 	<-doneChannel
 
-	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 1))
+	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk"), value.Slice())
 
-	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 1))
+	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Snapshot"), value.Slice())
 
-	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 2))
+	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 3))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk drive"), value.Slice())
 
-	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 2))
+	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 3))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Serialized Snapshot"), value.Slice())
 }
@@ -68,17 +68,17 @@ func TestExecutesABatchAndStops(t *testing.T) {
 	batch := NewBatch()
 	_ = batch.Add([]byte("HDD"), []byte("Hard disk"))
 	_ = batch.Add([]byte("isolation"), []byte("Snapshot"))
-	
+
 	doneChannel := executor.Submit(batch.ToTimestampedBatch(1))
 	<-doneChannel
 
 	executor.Stop()
 
-	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 1))
+	value, ok := memTable.Get(mvcc.NewVersionedKey([]byte("HDD"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk"), value.Slice())
 
-	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 1))
+	value, ok = memTable.Get(mvcc.NewVersionedKey([]byte("isolation"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Snapshot"), value.Slice())
 }

@@ -15,7 +15,7 @@ func TestPutsAKeyValueAndGetByKeyInNode(t *testing.T) {
 
 	sentinelNode.putOrUpdate(key, value, utils.NewLevelGenerator(maxLevel))
 
-	value, ok := sentinelNode.get(key)
+	value, ok := sentinelNode.get(NewVersionedKey([]byte("HDD"), 2))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk"), value.Slice())
 }
@@ -28,7 +28,7 @@ func TestUpdatesTheSameKeyWithADifferentVersion(t *testing.T) {
 	sentinelNode.putOrUpdate(NewVersionedKey([]byte("HDD"), 1), NewValue([]byte("Hard disk")), levelGenerator)
 	sentinelNode.putOrUpdate(NewVersionedKey([]byte("HDD"), 2), NewValue([]byte("Hard disk drive")), levelGenerator)
 
-	value, ok := sentinelNode.get(NewVersionedKey([]byte("HDD"), 2))
+	value, ok := sentinelNode.get(NewVersionedKey([]byte("HDD"), 3))
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk drive"), value.Slice())
 }
@@ -58,9 +58,9 @@ func TestGetsTheValueOfAKeyWithLatestVersion(t *testing.T) {
 	sentinelNode.putOrUpdate(NewVersionedKey([]byte("SSD"), 3), NewValue([]byte("Solid-State-drive")), levelGenerator)
 
 	expected := make(map[uint64][]byte)
-	expected[1] = []byte("Solid state drive")
-	expected[2] = []byte("Solid State drive")
-	expected[3] = []byte("Solid-State-drive")
+	expected[2] = []byte("Solid state drive")
+	expected[3] = []byte("Solid State drive")
+	expected[4] = []byte("Solid-State-drive")
 	expected[5] = []byte("Solid-State-drive")
 
 	for version, expectedValue := range expected {

@@ -10,6 +10,12 @@ type CommittedTransaction struct {
 	transaction     *ReadWriteTransaction
 }
 
+// Oracle is the central authority that assigns begin and commit timestamp to the transactions.
+// Every transaction gets a beginTimestamp and only a ReadWriteTransaction gets a commit timestamp.
+// According to snapshot isolation (or serialized snapshot isolation), every transaction reads the keys where:
+// commitTimestampOf(Key) < beginTimestampOf(transaction).
+// The current implementation uses nextTimestamp which denotes the timestamp that will be assigned as the commit timestamp
+// to the next transaction. The beginTimestamp is one less than the nextTimestamp.
 type Oracle struct {
 	lock                  sync.Mutex
 	executorLock          sync.Mutex

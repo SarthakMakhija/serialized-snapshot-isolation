@@ -20,7 +20,10 @@ func TestGetsAnExistingKeyInAReadonlyTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
 	memTable.PutOrUpdate(mvcc.NewVersionedKey([]byte("HDD"), 1), mvcc.NewValue([]byte("Hard disk")))
 
-	transaction := NewReadonlyTransaction(NewOracle(NewTransactionExecutor(memTable)))
+	oracle := NewOracle(NewTransactionExecutor(memTable))
+	oracle.nextTimestamp = 3
+
+	transaction := NewReadonlyTransaction(oracle)
 	value, ok := transaction.Get([]byte("HDD"))
 
 	assert.Equal(t, true, ok)
@@ -54,13 +57,16 @@ func TestAttemptsToPutDuplicateKeysInATransaction(t *testing.T) {
 
 func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 	memTable := mvcc.NewMemTable(10)
-
 	oracle := NewOracle(NewTransactionExecutor(memTable))
+
 	transaction := NewReadWriteTransaction(oracle)
 	_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk"))
-	_ = transaction.PutOrUpdate([]byte("SSD"), []byte("Solid state disk"))
-
 	done, _ := transaction.Commit()
+	<-done
+
+	anotherTransaction := NewReadWriteTransaction(oracle)
+	_ = anotherTransaction.PutOrUpdate([]byte("SSD"), []byte("Solid state disk"))
+	done, _ = transaction.Commit()
 	<-done
 
 	readonlyTransaction := NewReadonlyTransaction(oracle)
@@ -69,9 +75,8 @@ func TestGetsAnExistingKeyInAReadWriteTransaction(t *testing.T) {
 	assert.Equal(t, true, ok)
 	assert.Equal(t, []byte("Hard disk"), value.Slice())
 
-	value, ok = readonlyTransaction.Get([]byte("SSD"))
-	assert.Equal(t, true, ok)
-	assert.Equal(t, []byte("Solid state disk"), value.Slice())
+	_, ok = readonlyTransaction.Get([]byte("SSD"))
+	assert.Equal(t, false, ok)
 
 	_, ok = readonlyTransaction.Get([]byte("non-existing"))
 	assert.Equal(t, false, ok)

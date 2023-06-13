@@ -26,6 +26,12 @@ func TestGetsTheValueOfAnExistingKey(t *testing.T) {
 	assert.Nil(t, err)
 	<-waitChannel
 
+	waitChannel, err = db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
+		_ = transaction.PutOrUpdate([]byte("HDD"), []byte("Hard disk drive"))
+	})
+	assert.Nil(t, err)
+	<-waitChannel
+
 	db.Get(func(transaction *txn.ReadonlyTransaction) {
 		value, exists := transaction.Get([]byte("HDD"))
 		assert.Equal(t, true, exists)
@@ -38,6 +44,14 @@ func TestPutsMultipleKeyValuesInATransaction(t *testing.T) {
 	waitChannel, err := db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
 		for count := 1; count <= 100; count++ {
 			_ = transaction.PutOrUpdate([]byte("Key:"+strconv.Itoa(count)), []byte("Value:"+strconv.Itoa(count)))
+		}
+	})
+	assert.Nil(t, err)
+	<-waitChannel
+
+	waitChannel, err = db.PutOrUpdate(func(transaction *txn.ReadWriteTransaction) {
+		for count := 1; count <= 100; count++ {
+			_ = transaction.PutOrUpdate([]byte("Key:"+strconv.Itoa(count)), []byte("Value#"+strconv.Itoa(count)))
 		}
 	})
 	assert.Nil(t, err)

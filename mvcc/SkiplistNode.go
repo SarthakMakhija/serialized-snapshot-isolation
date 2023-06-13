@@ -59,7 +59,6 @@ func (node *SkiplistNode) matchingNode(key VersionedKey) (*SkiplistNode, bool) {
 			lastNodeWithTheKey = current
 		}
 	}
-	current = current.forwards[0]
 	if current != nil && current.key.matchesKeyPrefix(key.getKey()) {
 		return current, true
 	}
