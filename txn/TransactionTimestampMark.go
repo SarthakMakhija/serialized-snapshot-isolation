@@ -76,7 +76,10 @@ func (transactionTimestampMark *TransactionTimestampMark) DoneTill() uint64 {
 
 // WaitForMark is used to wait till the transaction timestamp >= timestamp is processed.
 // It does this by sending a mark to the `markChannel` and waiting for a response on the `waitChannel`.
-func (transactionTimestampMark *TransactionTimestampMark) WaitForMark(ctx context.Context, timestamp uint64) error {
+func (transactionTimestampMark *TransactionTimestampMark) WaitForMark(
+	ctx context.Context,
+	timestamp uint64,
+) error {
 	if transactionTimestampMark.DoneTill() >= timestamp {
 		return nil
 	}
@@ -99,8 +102,8 @@ func (transactionTimestampMark *TransactionTimestampMark) WaitForMark(ctx contex
 // The transaction with the commitTimestamp 6 invokes Finish(), followed by the transaction with the commitTimestamp 4.
 // TransactionTimestampMark can not consider the transaction with commitTimestamp = 6 as done because a transaction with the
 // commitTimestamp of 4 is not done yet.
-// It maintains a binary heap of transaction timestamps and anytime it identifies that a transaction is done, the transaction timestamp
-// is popped off the heap and the doneTill field of TransactionTimestampMark is updated.
+// It maintains a binary heap of transaction timestamps and anytime it identifies that a transaction is done,
+// the transaction timestamp is popped off the heap and the doneTill field of TransactionTimestampMark is updated.
 // This ensures that doneTill mark is updated in the following order: 4 followed by 6.
 func (transactionTimestampMark *TransactionTimestampMark) spin() {
 	var orderedTransactionTimestamps TransactionTimestampHeap
